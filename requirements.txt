@@ -1,0 +1,15 @@
+# HydroBench 评估库依赖
+
+# 核心依赖（必需）
+pandas>=2.0
+openpyxl>=3.0
+
+# 可选依赖
+# 生成 Word 和 PDF 报告（可选）
+python-docx>=1.0.0
+markdown>=3.4.0
+# weasyprint>=60.0  # PDF 生成需要，但安装较复杂，建议使用 Word 转 PDF
+# 生成图表（可选）
+matplotlib>=3.5.0
+numpy>=1.20.0
+

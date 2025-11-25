@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+**/__pycache__/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Output files
+examples/output/
+*.xlsx
+*.json
+# 但保留包内的数据文件
+!hydrobench-eval/hydrobench/data/*.json
+!hydrobench-eval/hydrobench/data/*.xlsx
+!hydrobench-eval/hydrobench/data/*.csv
+# 但保留示例中的测试数据
+!examples/test.xlsx
+!examples/test.csv
+
+# Test files
+test/
+*.log
+
+# Build artifacts
+hydrobench-eval/dist/
+hydrobench-eval/build/
+hydrobench-eval/*.egg-info/
+hydrobench-eval/.eggs/
+hydrobench-eval/hydrobench.egg-info/
+
+# Temporary files
+*.tmp
+*.temp
+stats_output.txt
+stats_result.txt
+temp_*.py
+
+# API tokens and secrets
+.pypirc
+*.pypirc
+.env
+.env.local
+*.token
+*.key
+
+# Documentation build
+docs/_build/
+docs/.doctrees/

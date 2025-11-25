@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hydrobench"
+version = "0.1.0"
+description = "A Python package for evaluating model performance on the HydroBench benchmark dataset."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "HydroBench Maintainers", email = "hydrobench@example.com" }
+]
+maintainers = [
+  { name = "HydroBench Maintainers", email = "hydrobench@example.com" }
+]
+keywords = [
+  "benchmark",
+  "evaluation",
+  "nlp",
+  "machine-learning",
+  "hydrobench",
+  "scoring",
+  "assessment",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "pandas>=2.0",
+  "openpyxl>=3.0",
+]
+
+[project.optional-dependencies]
+word = [
+  "python-docx>=1.0.0",
+]
+pdf = [
+  "markdown>=3.4.0",
+]
+all = [
+  "python-docx>=1.0.0",
+  "markdown>=3.4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/hydrobench"
+Documentation = "https://github.com/yourusername/hydrobench#readme"
+Repository = "https://github.com/yourusername/hydrobench"
+Issues = "https://github.com/yourusername/hydrobench/issues"
+
+[project.scripts]
+hydrobench = "hydrobench.cli:main"
+
+[tool.setuptools]
+packages = ["hydrobench"]
+
+[tool.setuptools.package-data]
+hydrobench = ["data/*.json", "data/*.csv", "data/*.xlsx"]
+
