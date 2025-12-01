@@ -1,63 +1,85 @@
 """
-示例 2: 批量评估多个模型
-展示如何使用 HydroBench 库批量评估 Excel 文件中的多个模型
+Example 2: Batch Evaluate Multiple Models
+Demonstrates how to use the HydroBench library to batch evaluate multiple models in an Excel file
 """
 
 from utils import setup_package_path, get_output_dir, get_test_data_path
 
-# 设置包路径
+# Setup package path
 PROJECT_ROOT = setup_package_path()
 
-from hydrobench import evaluate_all_models, load_builtin_benchmark, create_summary_excel
+from hydrosebench import evaluate_all_models, load_builtin_benchmark, create_summary_excel
+import pandas as pd
 
 
 def main():
-    """批量评估示例"""
+    """Batch evaluation example"""
     print("=" * 80)
-    print("示例 2: 批量评估多个模型")
+    print("Example 2: Batch Evaluate Multiple Models")
     print("=" * 80)
     print()
     
-    # 1. 设置输入和输出路径
+    # 1. Set input and output paths
     excel_path = get_test_data_path(PROJECT_ROOT)
     output_dir = get_output_dir(PROJECT_ROOT, "example_2_batch_evaluation")
     
     if not excel_path.exists():
-        print(f"⚠ 示例文件不存在: {excel_path}")
-        print("请确保 test.xlsx 文件存在，或修改 excel_path 指向您的数据文件")
+        print(f"⚠ Example file does not exist: {excel_path}")
+        print("Please ensure test.xlsx file exists, or modify excel_path to point to your data file")
         return
     
-    print(f"输入文件: {excel_path}")
-    print(f"输出目录: {output_dir}")
+    print(f"Input file: {excel_path}")
+    print(f"Output directory: {output_dir}")
     print()
     
-    # 2. 执行批量评估
-    # evaluate_all_models 会自动：
-    # - 识别 Excel 文件中的所有模型列
-    # - 为每个模型计算得分
-    # - 生成详细的 Excel 报告（每个模型一个文件）
-    # - 保存汇总 JSON 文件
-    print("正在执行批量评估...")
+    # 2. Filter out rows with empty answers (only calculate rows with values)
+    from utils import filter_empty_answers_from_file
+    import tempfile
+    
+    print("Filtering out rows with empty answers...")
+    temp_file = output_dir / "temp_filtered_data.csv" if excel_path.suffix.lower() == ".csv" else output_dir / "temp_filtered_data.xlsx"
+    filtered_path, filtered_count = filter_empty_answers_from_file(excel_path, temp_file)
+    
+    if filtered_count > 0:
+        print(f"✓ Filtered {filtered_count} rows with empty answers")
+        print(f"✓ Using {len(pd.read_csv(filtered_path) if filtered_path.suffix.lower() == '.csv' else pd.read_excel(filtered_path))} rows with non-empty answers")
+        excel_path = filtered_path
+    else:
+        print(f"✓ No empty answers found, using original file")
+        temp_file.unlink() if temp_file.exists() else None
+    print()
+    
+    # 3. Execute batch evaluation
+    # evaluate_all_models will automatically:
+    # - Identify all model columns in the Excel file
+    # - Calculate scores for each model
+    # - Generate detailed Excel reports (one file per model)
+    # - Save summary JSON file
+    print("Executing batch evaluation...")
     summary = evaluate_all_models(
         excel_path,
-        benchmark_name="hydrobench",
+        benchmark_name="hydrosebench",
         output_dir=output_dir,
         verbose=True,
     )
     
-    # 3. 生成模型对比汇总 Excel
-    print("\n正在生成模型对比汇总...")
-    benchmark = load_builtin_benchmark("hydrobench")
+    # Clean up temporary file
+    if temp_file.exists() and temp_file != excel_path:
+        temp_file.unlink()
+    
+    # 3. Generate model comparison summary Excel
+    print("\nGenerating model comparison summary...")
+    benchmark = load_builtin_benchmark("hydrosebench")
     create_summary_excel(summary, output_dir, benchmark)
     
-    # 4. 显示汇总结果
+    # 4. Display summary results
     print("\n" + "=" * 80)
-    print("评估完成！")
+    print("Evaluation completed!")
     print("=" * 80)
-    print(f"\n共评估 {summary['models_count']} 个模型，{summary['total_questions']} 道题目")
-    print("\n模型得分排名（按准确率排序）：")
+    print(f"\nEvaluated {summary['models_count']} models, {summary['total_questions']} questions total")
+    print("\nModel score ranking (sorted by accuracy):")
     print("-" * 80)
-    print(f"{'排名':<6} {'模型名称':<40} {'得分':<15} {'准确率':<12}")
+    print(f"{'Rank':<6} {'Model Name':<40} {'Score':<15} {'Accuracy':<12}")
     print("-" * 80)
     
     for idx, result in enumerate(summary["results"], 1):
@@ -66,20 +88,19 @@ def main():
         print(f"{idx:<6} {result['model_name']:<40} {score_str:<15} {accuracy_str:<12}")
     
     print("\n" + "=" * 80)
-    print("输出文件说明：")
+    print("Output File Description:")
     print("=" * 80)
-    print(f"1. 每个模型的详细报告: {output_dir}/<模型名>/")
-    print("   - score_report.xlsx: 包含题目内容、正确答案、模型答案的详细对比")
-    print("   - score_report.json: JSON 格式的详细数据")
-    print("   - 包含按类别和难度的统计表")
-    print(f"2. 模型对比汇总（Excel）: {output_dir}/models_comparison.xlsx")
-    print("   - 所有模型的得分对比")
-    print("   - 按类别、难度和题型的模型间对比")
-    print(f"3. 汇总数据（JSON）: {output_dir}/all_models_summary.json")
-    print("   - 完整的评估数据，包含按类别和难度的统计，便于程序处理")
+    print(f"1. Detailed report for each model: {output_dir}/<model_name>/")
+    print("   - score_report.xlsx: Detailed comparison of question content, correct answers, and model answers")
+    print("   - score_report.json: Detailed data in JSON format")
+    print("   - Contains statistics tables by category and difficulty")
+    print(f"2. Model comparison summary (Excel): {output_dir}/models_comparison.xlsx")
+    print("   - Score comparison of all models")
+    print("   - Model comparisons by category, difficulty, and question type")
+    print(f"3. Summary data (JSON): {output_dir}/all_models_summary.json")
+    print("   - Complete evaluation data, including statistics by category and difficulty, convenient for program processing")
     print("=" * 80)
 
 
 if __name__ == "__main__":
     main()
-

@@ -11,24 +11,24 @@ from .benchmark import Benchmark, Example
 
 def _detect_file_format(file_path: Path) -> str:
     """
-    检测文件的实际格式（通过读取文件头）。
+    Detect the actual file format (by reading file header).
     
     Args:
-        file_path: 文件路径
+        file_path: File path
     
     Returns:
-        'excel' 如果是 Excel 格式（.xlsx, .xls），'csv' 如果是 CSV 格式，'unknown' 如果无法确定
+        'excel' if Excel format (.xlsx, .xls), 'csv' if CSV format, 'unknown' if cannot determine
     """
     try:
         with open(file_path, 'rb') as f:
-            header = f.read(8)  # 读取前8个字节
-            # Excel 文件（.xlsx）以 ZIP 魔数开头：PK\x03\x04
+            header = f.read(8)  # Read first 8 bytes
+            # Excel files (.xlsx) start with ZIP magic number: PK\x03\x04
             if header[:2] == b'PK':
                 return 'excel'
-            # Excel 97-2003 (.xls) 以 OLE2 格式开头
+            # Excel 97-2003 (.xls) starts with OLE2 format
             if header[:8] == b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1':
                 return 'excel'
-            # CSV 文件通常是文本格式，检查是否包含可打印字符
+            # CSV files are usually text format, check if contains printable characters
             try:
                 header.decode('utf-8', errors='strict')
                 return 'csv'
@@ -44,33 +44,33 @@ def _detect_file_format(file_path: Path) -> str:
 
 def _read_csv_safe(csv_path: Path) -> pd.DataFrame:
     """
-    安全地读取 CSV 文件，尝试多种编码和参数组合。
+    Safely read CSV file, trying multiple encodings and parameter combinations.
     
     Args:
-        csv_path: CSV 文件路径
+        csv_path: CSV file path
     
     Returns:
-        DataFrame 对象
+        DataFrame object
     
     Raises:
-        ValueError: 如果所有尝试都失败
+        ValueError: If all attempts fail
     """
-    # 检查 pandas 版本以兼容不同的参数
+    # Check pandas version for compatibility with different parameters
     pandas_version = tuple(map(int, pd.__version__.split('.')[:2]))
-    use_on_bad_lines = pandas_version >= (1, 3)  # pandas >= 1.3.0 支持 on_bad_lines
+    use_on_bad_lines = pandas_version >= (1, 3)  # pandas >= 1.3.0 supports on_bad_lines
     
     encodings = ["utf-8", "utf-8-sig", "gbk", "gb18030", "latin-1"]
     last_error = None
     
     for encoding in encodings:
         try:
-            # 尝试使用 Python 引擎，更宽松的解析
+            # Try using Python engine for more lenient parsing
             read_csv_kwargs = {
                 'filepath_or_buffer': csv_path,
                 'encoding': encoding,
                 'engine': 'python',
-                'sep': ',',  # 明确指定分隔符
-                'quotechar': '"',  # 明确指定引号字符
+                'sep': ',',  # Explicitly specify separator
+                'quotechar': '"',  # Explicitly specify quote character
             }
             if use_on_bad_lines:
                 read_csv_kwargs['on_bad_lines'] = 'skip'
@@ -83,13 +83,13 @@ def _read_csv_safe(csv_path: Path) -> pd.DataFrame:
             last_error = e
             continue
     
-    # 如果所有编码都失败，尝试最基本的读取方式（跳过错误行）
+    # If all encodings fail, try the most basic reading method (skip error lines)
     try:
         read_csv_kwargs = {
             'filepath_or_buffer': csv_path,
             'encoding': "utf-8",
             'engine': 'python',
-            'sep': None,  # 自动检测分隔符
+            'sep': None,  # Auto-detect separator
         }
         if use_on_bad_lines:
             read_csv_kwargs['on_bad_lines'] = 'skip'
@@ -99,18 +99,18 @@ def _read_csv_safe(csv_path: Path) -> pd.DataFrame:
         df = pd.read_csv(**read_csv_kwargs)
         return df
     except Exception as e:
-        # 检查是否是 Excel 格式的文件被误当作 CSV
+        # Check if file is actually Excel format but misidentified as CSV
         actual_format = _detect_file_format(csv_path)
         if actual_format == 'excel':
             raise ValueError(
-                f"无法读取 CSV 文件 {csv_path}。"
-                f"检测到文件实际上是 Excel 格式（.xlsx 或 .xls），但扩展名是 .csv。"
-                f"请将文件重命名为 .xlsx 或 .xls，或使用 load_benchmark_from_file 函数（它会自动检测格式）。"
+                f"Cannot read CSV file {csv_path}. "
+                f"Detected file is actually Excel format (.xlsx or .xls), but extension is .csv. "
+                f"Please rename the file to .xlsx or .xls, or use load_benchmark_from_file function (it auto-detects format)."
             ) from (last_error or e)
         raise ValueError(
-            f"无法读取 CSV 文件 {csv_path}。"
-            f"请检查文件格式是否正确（确保使用逗号分隔，字段中的换行符用引号包裹）。"
-            f"错误: {last_error or e}"
+            f"Cannot read CSV file {csv_path}. "
+            f"Please check if file format is correct (ensure comma-separated, newlines in fields are quoted). "
+            f"Error: {last_error or e}"
         ) from (last_error or e)
 
 
@@ -126,50 +126,50 @@ def load_benchmark_from_file(
     sheet_name: str | int | None = 0,
 ) -> Benchmark:
     """
-    从文件加载 benchmark（支持 CSV、Excel 格式）。
+    Load benchmark from file (supports CSV, Excel formats).
     
-    支持的文件格式：.xlsx, .xls, .csv
-    函数会自动检测文件格式，即使扩展名不匹配也能正确读取。
+    Supported file formats: .xlsx, .xls, .csv
+    Function automatically detects file format, can correctly read even if extension doesn't match.
 
     Args:
-        file_path: 文件路径（支持 CSV、XLSX、XLS 格式）
-        answer_col: 标准答案列名，默认为 "Answer"
-        question_col: 题目内容列名，默认为 "Question"
-        id_col: 题目ID列名，如果为 None 则自动生成
-        category_col: 类别列名（如 "ID"），用于提取类别前缀（如 BK-001 -> BK）
-        level_col: 难度等级列名，默认为 "Level"
-        type_col: 题型列名，默认为 "Type"
-        sheet_name: 工作表名称或索引（仅 Excel 文件），默认为第一个工作表
+        file_path: File path (supports CSV, XLSX, XLS formats)
+        answer_col: Standard answer column name, defaults to "Answer"
+        question_col: Question content column name, defaults to "Question"
+        id_col: Question ID column name, if None then auto-generated
+        category_col: Category column name (e.g., "ID"), used to extract category prefix (e.g., BK-001 -> BK)
+        level_col: Difficulty level column name, defaults to "Level"
+        type_col: Question type column name, defaults to "Type"
+        sheet_name: Worksheet name or index (Excel files only), defaults to first worksheet
 
     Returns:
-        Benchmark 对象
+        Benchmark object
 
     Example:
-        >>> benchmark = load_benchmark_from_file("hydrobench.xlsx")
-        >>> benchmark = load_benchmark_from_file("hydrobench.csv")
-        >>> benchmark = load_benchmark_from_file("hydrobench.xls")
+        >>> benchmark = load_benchmark_from_file("hydrosebench.xlsx")
+        >>> benchmark = load_benchmark_from_file("hydrosebench.csv")
+        >>> benchmark = load_benchmark_from_file("hydrosebench.xls")
         >>> report = benchmark.score(predictions)
     """
     file_path = Path(file_path)
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    # 根据文件扩展名和实际格式选择读取方式
+    # Select reading method based on file extension and actual format
     file_ext = file_path.suffix.lower()
     actual_format = _detect_file_format(file_path)
     
-    # 如果扩展名是 .csv 但实际是 Excel 格式，使用 Excel 读取方式
+    # If extension is .csv but actual format is Excel, use Excel reading method
     if file_ext == ".csv" and actual_format == 'excel':
-        print(f"⚠ 警告: 文件扩展名是 .csv，但检测到实际格式是 Excel。将使用 Excel 读取方式。")
+        print(f"⚠ Warning: File extension is .csv, but detected actual format is Excel. Will use Excel reading method.")
         df = pd.read_excel(file_path, sheet_name=sheet_name)
     elif file_ext == ".csv":
         df = _read_csv_safe(file_path)
     elif file_ext in (".xlsx", ".xls"):
         df = pd.read_excel(file_path, sheet_name=sheet_name)
     else:
-        # 如果扩展名不支持，但检测到是 Excel 格式，尝试使用 Excel 读取
+        # If extension is not supported but detected as Excel format, try using Excel reading
         if actual_format == 'excel':
-            print(f"⚠ 警告: 文件扩展名是 {file_ext}，但检测到实际格式是 Excel。将尝试使用 Excel 读取方式。")
+            print(f"⚠ Warning: File extension is {file_ext}, but detected actual format is Excel. Will try using Excel reading method.")
             df = pd.read_excel(file_path, sheet_name=sheet_name)
         else:
             raise ValueError(f"Unsupported file format: {file_ext}. Supported formats: .csv, .xlsx, .xls")
@@ -196,17 +196,17 @@ def load_benchmark_from_file(
 
         question_text = str(row.get(question_col, "")).strip()
 
-        # 解析选项字母（从题目文本中提取 A/B/C/D 等）
+        # Parse option letters (extract A/B/C/D etc. from question text)
         option_letters = set(
             re.findall(r"([A-Z])\s*[\.．、：:）\)]", question_text)
         )
         if not option_letters:
-            # 如果题目中没有找到选项，从答案中提取可能的选项
+            # If no options found in question, extract possible options from answer
             option_letters = set(ch for ch in answer_str if ch.isalpha() and ch.isupper())
 
         option_labels = sorted(option_letters) if option_letters else []
 
-        # 解析正确答案（从 Answer 列提取）
+        # Parse correct answer (extract from Answer column)
         correct_letters: set[str] = set()
         for ch in answer_str:
             if ch.strip() and ch.isalpha() and ch.isupper():
@@ -214,11 +214,11 @@ def load_benchmark_from_file(
             elif ch in {",", "，", ";", "；", "/", "、", "+", "|"}:
                 continue
 
-        # 如果没有找到选项标签，使用正确答案中的字母
+        # If no option labels found, use letters from correct answer
         if not option_labels and correct_letters:
             option_labels = sorted(correct_letters)
 
-        # 构建 metadata
+        # Build metadata
         metadata: dict[str, Any] = {}
 
         if category_col and category_col in df.columns:
@@ -233,7 +233,7 @@ def load_benchmark_from_file(
             level_val = row.get(level_col)
             if not pd.isna(level_val):
                 level_str = str(level_val).strip()
-                # 映射常见的中文/英文等级
+                # Map common Chinese/English levels
                 level_map = {
                     "A": "basic conceptual knowledge",
                     "B": "engineering applications",
@@ -255,7 +255,7 @@ def load_benchmark_from_file(
                 }
                 metadata["type"] = type_map.get(type_str, type_map.get(type_str.lower(), type_str))
 
-        # 生成题目ID
+        # Generate question ID
         if id_col and id_col in df.columns:
             example_id = str(row.get(id_col, "")).strip()
             if not example_id or pd.isna(row.get(id_col)):
@@ -292,50 +292,50 @@ def load_predictions_from_excel(
     sheet_name: str | int | None = 0,
 ) -> dict[str, Any] | list[Any]:
     """
-    从 Excel 或 CSV 文件加载模型预测结果。
+    Load model prediction results from Excel or CSV file.
     
-    支持的文件格式：.xlsx, .xls, .csv
+    Supported file formats: .xlsx, .xls, .csv
 
-    支持两种模式：
-    1. 如果提供了 id_col，返回字典 {question_id: answer}
-    2. 否则返回列表，按行顺序排列
+    Supports two modes:
+    1. If id_col is provided, returns dictionary {question_id: answer}
+    2. Otherwise returns list, ordered by row
 
     Args:
-        excel_path: Excel 或 CSV 文件路径
-        answer_col: 预测答案列名，默认为 "Answer"
-        id_col: 题目ID列名。如果提供，返回字典格式；否则返回列表格式
-        sheet_name: 工作表名称或索引（仅 Excel 文件），默认为第一个工作表
+        excel_path: Excel or CSV file path
+        answer_col: Prediction answer column name, defaults to "Answer"
+        id_col: Question ID column name. If provided, returns dictionary format; otherwise returns list format
+        sheet_name: Worksheet name or index (Excel files only), defaults to first worksheet
 
     Returns:
-        预测结果，格式为字典或列表
+        Prediction results, in dictionary or list format
 
     Example:
-        >>> # 使用 ID 列，返回字典
+        >>> # Use ID column, returns dictionary
         >>> predictions = load_predictions_from_excel("model_output.xlsx", id_col="ID")
         >>> predictions = load_predictions_from_excel("model_output.csv", id_col="ID")
-    >>> # 不使用 ID 列，返回列表（按行顺序）
+    >>> # Don't use ID column, returns list (ordered by row)
     >>> predictions = load_predictions_from_excel("model_output.xlsx", id_col=None)
     """
     excel_path = Path(excel_path)
     if not excel_path.is_file():
         raise FileNotFoundError(f"File not found: {excel_path}")
 
-    # 根据文件扩展名和实际格式选择读取方式
+    # Select reading method based on file extension and actual format
     file_ext = excel_path.suffix.lower()
     actual_format = _detect_file_format(excel_path)
     
-    # 如果扩展名是 .csv 但实际是 Excel 格式，使用 Excel 读取方式
+    # If extension is .csv but actual format is Excel, use Excel reading method
     if file_ext == ".csv" and actual_format == 'excel':
-        print(f"⚠ 警告: 文件扩展名是 .csv，但检测到实际格式是 Excel。将使用 Excel 读取方式。")
+        print(f"⚠ Warning: File extension is .csv, but detected actual format is Excel. Will use Excel reading method.")
         df = pd.read_excel(excel_path, sheet_name=sheet_name)
     elif file_ext == ".csv":
         df = _read_csv_safe(excel_path)
     elif file_ext in (".xlsx", ".xls"):
         df = pd.read_excel(excel_path, sheet_name=sheet_name)
     else:
-        # 如果扩展名不支持，但检测到是 Excel 格式，尝试使用 Excel 读取
+        # If extension is not supported but detected as Excel format, try using Excel reading
         if actual_format == 'excel':
-            print(f"⚠ 警告: 文件扩展名是 {file_ext}，但检测到实际格式是 Excel。将尝试使用 Excel 读取方式。")
+            print(f"⚠ Warning: File extension is {file_ext}, but detected actual format is Excel. Will try using Excel reading method.")
             df = pd.read_excel(excel_path, sheet_name=sheet_name)
         else:
             raise ValueError(f"Unsupported file format: {file_ext}. Supported formats: .csv, .xlsx, .xls")
@@ -351,7 +351,7 @@ def load_predictions_from_excel(
         )
 
     if id_col:
-        # 返回字典格式 {id: answer}
+        # Return dictionary format {id: answer}
         result: dict[str, Any] = {}
         for _, row in df.iterrows():
             answer_val = row.get(answer_col)
@@ -366,7 +366,7 @@ def load_predictions_from_excel(
             result[question_id] = answer_val
         return result
     else:
-        # 返回列表格式（按行顺序）
+        # Return list format (ordered by row)
         result: list[Any] = []
         for _, row in df.iterrows():
             answer_val = row.get(answer_col)

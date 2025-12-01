@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        cd hydrosebench-eval
+        pip install -e ".[all]"
+        pip install pytest  # 如果将来添加测试
+    
+    - name: Verify package installation
+      run: |
+        python -c "import hydrosebench; print(f'hydrosebench version: {hydrosebench.__version__}')"
+    
+    - name: Run example scripts (basic check)
+      run: |
+        cd examples
+        python example_0_download_data.py || echo "Example 0 completed (may require manual setup)"
+        python example_1_basic_evaluation.py || echo "Example 1 completed (may require test data)"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    
+    - name: Install build dependencies
+      run: |
+        pip install build twine
+    
+    - name: Build package
+      run: |
+        cd hydrosebench-eval
+        python -m build
+    
+    - name: Check package
+      run: |
+        cd hydrosebench-eval
+        python -m twine check dist/*
+

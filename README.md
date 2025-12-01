@@ -1,10 +1,12 @@
-# HydroBench Dataset
+# HydroSEBench Dataset
 
-HydroBench is a professional evaluation dataset specifically designed for the water conservancy and hydropower field, aimed at comprehensively assessing models' capabilities in water engineering expertise, engineering applications, and reasoning calculations.
+HydroSEBench is a professional evaluation dataset specifically designed for the water conservancy and hydropower field, aimed at comprehensively assessing models' capabilities in water engineering expertise, engineering applications, and reasoning calculations.
 
 ## 📊 Dataset Overview
 
-The HydroBench dataset contains **4,000** questions covering nine core professional directions in water conservancy and hydropower. All questions are in Chinese, making it suitable for evaluating Chinese language models' professional capabilities in the water engineering domain.
+The HydroSEBench dataset contains **4,000** questions covering nine core professional directions in water conservancy and hydropower. All questions are in Chinese, making it suitable for evaluating Chinese language models' professional capabilities in the water engineering domain.
+
+![Question Distribution](Question_Distribution.png)
 
 ### Overall Statistics
 
@@ -16,11 +18,9 @@ The HydroBench dataset contains **4,000** questions covering nine core professio
 
 The dataset is divided into three difficulty levels, balancing fundamental knowledge and advanced reasoning capabilities:
 
-- **Basic Conceptual Knowledge**: 1,651 questions (41.3%)
-- **Engineering Applications**: 1,651 questions (41.3%)
-- **Reasoning and Calculation**: 698 questions (17.4%)
-
-> Note: The total number of questions across all difficulty levels is 4,000. The percentages above are rounded approximations.
+- **Basic Conceptual Knowledge**: 1,650 questions (43.75%)
+- **Engineering Applications**: 1,650 questions (43.75%)
+- **Reasoning and Calculation**: 700 questions (12.5%)
 
 ### Category Distribution
 
@@ -38,8 +38,6 @@ The dataset covers the following nine professional directions, each containing a
 | **M** | Meteorology | 500 | 336 | 164 | 200 | 200 | 100 |
 | **PS** | Power System | 500 | 363 | 137 | 200 | 200 | 100 |
 
-> Note: Detailed statistics can be obtained by running the `final_stats.py` or `calc_and_save.py` scripts. After running the script, copy the output results into the table above.
-
 ## ✨ Dataset Features
 
 1. **Comprehensive Coverage**: Covers core knowledge domains in water conservancy and hydropower engineering, from basic concepts to engineering practice
@@ -50,16 +48,16 @@ The dataset covers the following nine professional directions, each containing a
 
 ## 📥 Getting the Dataset
 
-Dataset files are located in the `hydrobench-eval/hydrobench/data/` directory, available in the following formats:
+Dataset files are located in the `hydrosebench-eval/hydrosebench/data/` directory, available in the following formats:
 
-- **hydrobench.json**: Complete dataset in JSON format
-- **hydrobench.csv**: Dataset in CSV format (lighter weight, suitable for version control)
+- **hydrosebench.json**: Complete dataset in JSON format
+- **hydrosebench.csv**: Dataset in CSV format (lighter weight, suitable for version control)
 
 For detailed download and installation instructions, see: 📖 **[Installation Guide](INSTALL.md#download-dataset-files)**
 
 ## 🔧 Using the Evaluation Tools
 
-We provide a dedicated Python package for evaluating model performance on the HydroBench dataset. The evaluation tools support:
+We provide a dedicated Python package for evaluating model performance on the HydroSEBench dataset. The evaluation tools support:
 
 - ✅ Batch evaluation of multiple models
 - ✅ Automatic generation of detailed evaluation reports (Excel, JSON, Markdown)
@@ -71,19 +69,19 @@ We provide a dedicated Python package for evaluating model performance on the Hy
 
 For detailed installation and usage instructions, see:
 
-- 📖 **[Complete Evaluation Tool Documentation](hydrobench-eval/README.md)** - Complete API documentation, usage examples, and command-line tool instructions
-- 🔧 **[Installation Instructions](hydrobench-eval/README.md#安装)** - Package installation steps
-- 🚀 **[Quick Start](hydrobench-eval/README.md#快速开始)** - Quick start example code
+- 📖 **[Complete Evaluation Tool Documentation](hydrosebench-eval/README.md)** - Complete API documentation, usage examples, and command-line tool instructions
+- 🔧 **[Installation Instructions](hydrosebench-eval/README.md#installation)** - Package installation steps
+- 🚀 **[Quick Start](hydrosebench-eval/README.md#quick-start)** - Quick start example code
 
 ## 📁 Project Structure
 
 ```
-hydrobench-package/
-├── hydrobench-eval/          # HydroBench evaluation toolkit
-│   ├── hydrobench/           # Core modules
+hydrosebench-package/
+├── hydrosebench-eval/          # HydroSEBench evaluation toolkit
+│   ├── hydrosebench/           # Core modules
 │   │   └── data/             # Built-in dataset
-│   │       ├── hydrobench.json
-│   │       └── hydrobench.csv
+│   │       ├── hydrosebench.json
+│   │       └── hydrosebench.csv
 │   └── README.md             # Complete evaluation tool documentation
 ├── examples/                  # Usage example code
 │   ├── example_0_download_data.py
@@ -94,7 +92,7 @@ hydrobench-package/
 
 ## 📚 Additional Resources
 
-- **Evaluation Tool Documentation**: [hydrobench-eval/README.md](hydrobench-eval/README.md) - Complete API documentation and usage guide for evaluation tools
+- **Evaluation Tool Documentation**: [hydrosebench-eval/README.md](hydrosebench-eval/README.md) - Complete API documentation and usage guide for evaluation tools
 - **Example Code**: [examples/](examples/) - Detailed usage examples and code demonstrations
 - **Example Documentation**: [examples/README.md](examples/README.md) - Detailed explanation of all examples
 
@@ -109,16 +107,18 @@ The dataset uses standard JSON and CSV formats, containing the following fields:
 - **Level**: Difficulty level (Basic Conceptual Knowledge, Engineering Applications, Reasoning and Calculation)
 - **Type**: Question type (Single-choice, Multiple-choice)
 
-For detailed format specifications, see [Evaluation Tool Documentation](hydrobench-eval/README.md#文件格式要求).
+For detailed format specifications, see [Evaluation Tool Documentation](hydrosebench-eval/README.md#file-format-requirements).
 
 ## 🤝 Contributing
 
 Contributions and improvements are welcome! If you have questions or suggestions, please submit an Issue or Pull Request.
 
+For detailed contribution guidelines, please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## 📝 License
 
-[Add license information here]
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-**HydroBench** - Professional Evaluation Dataset for Water Conservancy and Hydropower Domain
+**HydroSEBench** - Professional Evaluation Dataset for Water Conservancy and Hydropower Domain

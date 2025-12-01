@@ -1,5 +1,5 @@
 """
-批量评估多个模型的得分计算功能
+Batch evaluation score calculation functionality for multiple models
 """
 
 from __future__ import annotations
@@ -15,7 +15,8 @@ from .datasets import load_builtin_benchmark
 from .excel_loader import load_predictions_from_excel, _read_csv_safe
 
 
-# 标准列（非模型列）列表
+# Standard columns (non-model columns) list
+# Note: Includes both English and Chinese column names for compatibility
 STANDARD_COLUMNS = {
     "ID", "id", "Id", "ID列", "id列",
     "Question", "question", "Question列", "题目", "问题", "问题列",
@@ -28,12 +29,12 @@ STANDARD_COLUMNS = {
 
 
 def is_standard_column(col_name: str) -> bool:
-    """判断是否是标准列（非模型列）"""
+    """Determine if a column is a standard column (non-model column)"""
     col_lower = str(col_name).lower()
-    # 检查是否在标准列列表中
+    # Check if in standard columns list
     if col_name in STANDARD_COLUMNS:
         return True
-    # 检查是否包含 token 关键词
+    # Check if contains token keyword
     if "token" in col_lower:
         return True
     return False
@@ -41,41 +42,41 @@ def is_standard_column(col_name: str) -> bool:
 
 def identify_model_columns(df: pd.DataFrame, verbose: bool = True) -> list[str]:
     """
-    从 DataFrame 中识别模型列。
+    Identify model columns from DataFrame.
     
     Args:
-        df: Excel 文件读取的 DataFrame
-        verbose: 是否输出详细信息
+        df: DataFrame read from Excel file
+        verbose: Whether to output detailed information
     
     Returns:
-        模型列名列表
+        List of model column names
     """
     model_columns = []
     
     if verbose:
         print("=" * 80)
-        print("正在识别模型列...")
+        print("Identifying model columns...")
         print("=" * 80)
     
     for col in df.columns:
         if is_standard_column(col):
             if verbose:
-                print(f"  [标准列] {col} - 跳过")
+                print(f"  [Standard Column] {col} - Skipped")
             continue
         
-        # 检查该列是否包含答案数据
+        # Check if this column contains answer data
         non_null_count = df[col].notna().sum()
         if non_null_count == 0:
             if verbose:
-                print(f"  [空列] {col} - 跳过（无数据）")
+                print(f"  [Empty Column] {col} - Skipped (no data)")
             continue
         
-        # 检查该列的数据是否像答案（包含字母 A-Z）
+        # Check if the column data looks like answers (contains letters A-Z)
         sample_values = df[col].dropna().head(10).astype(str)
         has_answer_pattern = False
         for val in sample_values:
             val_str = str(val).upper().strip()
-            # 检查是否包含字母（答案通常是 A, B, C, D 等）
+            # Check if contains letters (answers are usually A, B, C, D, etc.)
             if any(c.isalpha() and c.isupper() for c in val_str):
                 has_answer_pattern = True
                 break
@@ -83,16 +84,16 @@ def identify_model_columns(df: pd.DataFrame, verbose: bool = True) -> list[str]:
         if has_answer_pattern:
             model_columns.append(col)
             if verbose:
-                print(f"  [模型列] ✓ {col} - 包含 {non_null_count} 个答案")
+                print(f"  [Model Column] ✓ {col} - Contains {non_null_count} answers")
         else:
             if verbose:
-                print(f"  [其他列] {col} - 跳过（数据格式不像答案）")
+                print(f"  [Other Column] {col} - Skipped (data format doesn't look like answers)")
     
     if verbose:
-        print(f"\n✓ 识别到 {len(model_columns)} 个模型列:")
+        print(f"\n✓ Identified {len(model_columns)} model columns:")
         for i, col in enumerate(model_columns, 1):
             non_null_count = df[col].notna().sum()
-            print(f"  {i}. {col} ({non_null_count} 个答案)")
+            print(f"  {i}. {col} ({non_null_count} answers)")
     
     return model_columns
 
@@ -101,63 +102,63 @@ def evaluate_all_models(
     excel_path: str | Path,
     *,
     benchmark: Benchmark | None = None,
-    benchmark_name: str = "hydrobench",
+    benchmark_name: str = "hydrosebench",
     id_col: str | None = None,
     output_dir: str | Path | None = None,
     verbose: bool = True,
 ) -> dict[str, Any]:
     """
-    批量评估 CSV 或 Excel 文件中所有模型的得分。
+    Batch evaluate scores for all models in CSV or Excel file.
     
     Args:
-        excel_path: CSV 或 Excel 文件路径
-        benchmark: Benchmark 对象，如果为 None 则使用内置的 benchmark
-        benchmark_name: 如果 benchmark 为 None，使用此名称加载内置 benchmark
-        id_col: ID 列名，如果为 None 则自动检测
-        output_dir: 输出目录，如果为 None 则不保存文件
-        verbose: 是否输出详细信息
+        excel_path: CSV or Excel file path
+        benchmark: Benchmark object, if None then use built-in benchmark
+        benchmark_name: If benchmark is None, use this name to load built-in benchmark
+        id_col: ID column name, if None then auto-detect
+        output_dir: Output directory, if None then don't save files
+        verbose: Whether to output detailed information
     
     Returns:
-        包含所有模型评估结果的字典
+        Dictionary containing evaluation results for all models
     """
     excel_path = Path(excel_path)
     if not excel_path.is_file():
         raise FileNotFoundError(f"File not found: {excel_path}")
     
-    # 加载 benchmark
+    # Load benchmark
     if benchmark is None:
         if verbose:
-            print(f"正在加载内置的 {benchmark_name} 测评集...")
+            print(f"Loading built-in {benchmark_name} benchmark...")
         benchmark = load_builtin_benchmark(benchmark_name)
         if verbose:
-            print(f"✓ 已加载测评集，共 {len(benchmark.examples)} 道题目\n")
+            print(f"✓ Benchmark loaded, {len(benchmark.examples)} questions total\n")
     
-    # 读取文件（支持 CSV 和 Excel）
+    # Read file (supports CSV and Excel)
     file_ext = excel_path.suffix.lower()
     if verbose:
         file_type = "CSV" if file_ext == ".csv" else "Excel"
-        print(f"正在读取 {file_type} 文件：{excel_path}")
+        print(f"Reading {file_type} file: {excel_path}")
     
     if file_ext == ".csv":
-        # 使用安全的 CSV 读取函数，支持多种编码和格式
+        # Use safe CSV reading function, supports multiple encodings and formats
         df = _read_csv_safe(excel_path)
     else:
         df = pd.read_excel(excel_path)
     
     if verbose:
-        print(f"\n文件包含 {len(df)} 行，{len(df.columns)} 列")
-        print(f"所有列名: {list(df.columns)}\n")
+        print(f"\nFile contains {len(df)} rows, {len(df.columns)} columns")
+        print(f"All column names: {list(df.columns)}\n")
     
-    # 识别模型列
+    # Identify model columns
     model_columns = identify_model_columns(df, verbose=verbose)
     
     if len(model_columns) == 0:
         raise ValueError(
-            "未识别到任何模型列。请检查文件格式。\n"
-            "提示：模型列应该包含答案数据（如 A, B, C, D 或 A,B 等）"
+            "No model columns identified. Please check file format.\n"
+            "Hint: Model columns should contain answer data (e.g., A, B, C, D or A,B, etc.)"
         )
     
-    # 确定 ID 列
+    # Determine ID column
     if id_col is None:
         for possible_id in ["ID", "id", "Id"]:
             if possible_id in df.columns:
@@ -166,36 +167,36 @@ def evaluate_all_models(
     
     if verbose:
         if id_col:
-            print(f"\n✓ 使用 ID 列进行匹配: {id_col}")
+            print(f"\n✓ Using ID column for matching: {id_col}")
         else:
-            print(f"\n⚠ 未找到 ID 列，将使用行顺序匹配")
+            print(f"\n⚠ ID column not found, will use row order for matching")
     
-    # 对每个模型列进行得分计算
+    # Calculate scores for each model column
     results = []
     errors = []
     
     if verbose:
         print("\n" + "=" * 80)
-        print("开始批量计算得分...")
+        print("Starting batch score calculation...")
         print("=" * 80)
     
     for model_col in model_columns:
         if verbose:
-            print(f"\n正在处理模型: {model_col}")
+            print(f"\nProcessing model: {model_col}")
             print("-" * 80)
         
         try:
-            # 加载该模型的预测结果
+            # Load predictions for this model
             predictions = load_predictions_from_excel(
                 excel_path,
                 id_col=id_col,
                 answer_col=model_col
             )
             
-            # 计算得分
+            # Calculate scores
             report = benchmark.score(predictions)
             
-            # 统计信息
+            # Statistics
             correct_count = sum(1 for s in report.example_scores if s.is_correct)
             incorrect_count = len(report.example_scores) - correct_count
             missing_count = sum(1 for s in report.example_scores if s.missing_prediction)
@@ -221,48 +222,48 @@ def evaluate_all_models(
             results.append(result)
             
             if verbose:
-                print(f"  总分: {report.total_score}/{report.max_score}")
-                print(f"  准确率: {report.accuracy:.2%}")
-                print(f"  答对: {correct_count}, 答错: {incorrect_count}, 缺失: {missing_count}")
+                print(f"  Total score: {report.total_score}/{report.max_score}")
+                print(f"  Accuracy: {report.accuracy:.2%}")
+                print(f"  Correct: {correct_count}, Incorrect: {incorrect_count}, Missing: {missing_count}")
             
-            # 保存详细报告（JSON 和 Excel）
+            # Save detailed reports (JSON and Excel)
             if output_dir:
                 output_dir_path = Path(output_dir)
                 output_dir_path.mkdir(parents=True, exist_ok=True)
                 
-                # 生成安全的文件夹名（用于创建文件夹）
+                # Generate safe folder name (for creating folder)
                 safe_name = model_col.replace("/", "_").replace("\\", "_").replace(":", "_").replace("*", "_").replace("?", "_").replace('"', "_").replace("<", "_").replace(">", "_").replace("|", "_")
                 
-                # 为每个模型创建单独的文件夹
+                # Create separate folder for each model
                 model_dir = output_dir_path / safe_name
                 model_dir.mkdir(parents=True, exist_ok=True)
                 
-                # 保存 JSON 报告
+                # Save JSON report
                 json_file = model_dir / "score_report.json"
                 json_file.write_text(report.to_json(), encoding="utf-8")
                 
-                # 保存 CSV 报告（轻量，推荐）
+                # Save CSV report (lightweight, recommended)
                 csv_file = model_dir / "score_report.csv"
                 try:
                     report.to_csv(csv_file, benchmark=benchmark)
                     if verbose:
-                        print(f"  ✓ CSV 报告: {csv_file}")
+                        print(f"  ✓ CSV report: {csv_file}")
                 except ImportError:
                     if verbose:
-                        print(f"  ⚠ 提示: 安装 pandas 可生成 CSV 报告")
+                        print(f"  ⚠ Hint: Install pandas to generate CSV report")
                 
-                # 保存 Excel 报告（更直观，可选）
+                # Save Excel report (more intuitive, optional)
                 excel_file = model_dir / "score_report.xlsx"
                 try:
                     report.to_excel(excel_file, benchmark=benchmark)
                     if verbose:
-                        print(f"  ✓ Excel 报告: {excel_file}")
+                        print(f"  ✓ Excel report: {excel_file}")
                 except ImportError:
                     if verbose:
-                        print(f"  ⚠ 提示: 安装 pandas 和 openpyxl 可生成 Excel 报告")
+                        print(f"  ⚠ Hint: Install pandas and openpyxl to generate Excel report")
                 
                 if verbose:
-                    print(f"  ✓ 详细报告已保存到文件夹: {safe_name}/")
+                    print(f"  ✓ Detailed reports saved to folder: {safe_name}/")
             
         except Exception as e:
             error_info = {
@@ -271,12 +272,12 @@ def evaluate_all_models(
             }
             errors.append(error_info)
             if verbose:
-                print(f"  ❌ 处理失败: {e}")
+                print(f"  ❌ Processing failed: {e}")
     
-    # 按准确率排序
+    # Sort by accuracy
     sorted_results = sorted(results, key=lambda x: x["accuracy"], reverse=True)
     
-    # 汇总结果
+    # Summary results
     summary = {
         "benchmark": benchmark_name,
         "total_questions": len(benchmark.examples),
@@ -286,7 +287,7 @@ def evaluate_all_models(
         "errors": errors if errors else None,
     }
     
-    # 保存汇总结果
+    # Save summary results
     if output_dir:
         output_dir_path = Path(output_dir)
         output_dir_path.mkdir(parents=True, exist_ok=True)
@@ -296,14 +297,14 @@ def evaluate_all_models(
             encoding="utf-8"
         )
         if verbose:
-            print(f"\n✓ 汇总结果已保存到: {summary_file}")
+            print(f"\n✓ Summary results saved to: {summary_file}")
     
-    # 输出汇总
+    # Output summary
     if verbose:
         print("\n" + "=" * 80)
-        print("所有模型得分汇总")
+        print("All Models Score Summary")
         print("=" * 80)
-        print(f"{'模型名称':<40} {'总分':<15} {'准确率':<15} {'答对/答错/缺失':<25}")
+        print(f"{'Model Name':<40} {'Total Score':<15} {'Accuracy':<15} {'Correct/Incorrect/Missing':<25}")
         print("-" * 80)
         
         for result in sorted_results:
@@ -313,16 +314,16 @@ def evaluate_all_models(
             print(f"{result['model_name']:<40} {score_str:<15} {accuracy_str:<15} {detail_str:<25}")
         
         if errors:
-            print("\n处理失败的模型:")
+            print("\nFailed models:")
             for error in errors:
                 print(f"  {error['model_name']}: {error['error']}")
         
         print("\n" + "=" * 80)
-        print("批量计算完成！")
+        print("Batch calculation completed!")
         print("=" * 80)
-        print(f"\n共处理 {len(model_columns)} 个模型")
+        print(f"\nProcessed {len(model_columns)} models")
         if output_dir:
-            print(f"结果保存在: {output_dir_path}")
+            print(f"Results saved to: {output_dir_path}")
     
     return summary
 

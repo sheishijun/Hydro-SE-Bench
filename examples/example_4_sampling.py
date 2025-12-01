@@ -1,14 +1,14 @@
 """
-示例 4: 采样功能
-展示如何从测评集中按类别采样题目
+Example 4: Sampling Functionality
+Demonstrates how to sample questions by category from a benchmark
 """
 
 from utils import setup_package_path, get_output_dir, get_benchmark_data_path
 
-# 设置包路径
+# Setup package path
 PROJECT_ROOT = setup_package_path()
 
-from hydrobench import (
+from hydrosebench import (
     load_builtin_benchmark,
     load_benchmark_from_file,
     sample_benchmark_by_category,
@@ -18,31 +18,31 @@ from hydrobench import (
 
 
 def main():
-    """采样功能示例"""
+    """Sampling functionality example"""
     print("=" * 80)
-    print("示例 4: 采样功能")
+    print("Example 4: Sampling Functionality")
     print("=" * 80)
     print()
     
-    # 1. 加载测评集
-    print("步骤 1: 加载测评集...")
-    benchmark = load_builtin_benchmark("hydrobench")
-    print(f"✓ 已加载测评集，共 {len(benchmark.examples)} 道题目")
+    # 1. Load benchmark
+    print("Step 1: Loading benchmark...")
+    benchmark = load_builtin_benchmark("hydrosebench")
+    print(f"✓ Benchmark loaded, {len(benchmark.examples)} questions total")
     print()
     
-    # 2. 按类别采样题目
-    print("步骤 2: 按类别采样题目...")
-    print("从每个类别中采样 5 道题目...")
+    # 2. Sample questions by category
+    print("Step 2: Sampling questions by category...")
+    print("Sampling 5 questions from each category...")
     
     sampled_examples = sample_examples_by_category(
         benchmark,
         per_category=5
     )
     
-    print(f"✓ 采样完成，共采样 {len(sampled_examples)} 道题目")
+    print(f"✓ Sampling completed, {len(sampled_examples)} questions sampled")
     print()
     
-    # 显示采样结果统计
+    # Display sampling result statistics
     from collections import Counter
     categories = []
     for example in sampled_examples:
@@ -51,55 +51,54 @@ def main():
             categories.append(category)
     
     category_counts = Counter(categories)
-    print("采样结果按类别分布：")
+    print("Sampling results by category distribution:")
     print("-" * 80)
     for category, count in sorted(category_counts.items()):
-        print(f"  {category}: {count} 道")
+        print(f"  {category}: {count} questions")
     print()
     
-    # 3. 创建采样后的测评集并自动保存
-    print("步骤 3: 创建采样后的测评集...")
+    # 3. Create sampled benchmark and auto-save
+    print("Step 3: Creating sampled benchmark...")
     output_dir = get_output_dir(PROJECT_ROOT, "example_4_sampling")
     
-    # 根据输入格式自动选择输出格式
-    # 由于使用的是内置 benchmark（从 JSON 加载），输出 JSON
+    # Automatically select output format based on input format
+    # Since we're using built-in benchmark (loaded from JSON), output JSON
     output_file = output_dir / "sampled_benchmark_from_json.json"
     
     sampled_benchmark = sample_benchmark_by_category(
         benchmark,
         per_category=5,
-        output_path=output_file  # 自动保存，格式根据输入自动检测
+        output_path=output_file  # Auto-save, format automatically detected based on input
     )
     
-    print(f"✓ 已创建采样后的测评集，共 {len(sampled_benchmark.examples)} 道题目")
-    print(f"✓ 采样结果已自动保存: {output_file}")
+    print(f"✓ Sampled benchmark created, {len(sampled_benchmark.examples)} questions total")
+    print(f"✓ Sampling results auto-saved: {output_file}")
     print()
     
-    # 4. 演示从 csv 加载并采样（如果 csv 文件存在）
+    # 4. Demonstrate loading from csv and sampling (if csv file exists)
     excel_benchmark_path = get_benchmark_data_path(PROJECT_ROOT)
     if excel_benchmark_path.exists():
-        print("步骤 4: 演示从 csv/excel加载并采样...")
+        print("Step 4: Demonstrating loading from csv/excel and sampling...")
         excel_benchmark = load_benchmark_from_file(excel_benchmark_path)
         
-        # 从 csv 加载的，输出 csv格式
+        # Loaded from csv, output csv format
         excel_output_file = output_dir / "sampled_benchmark_from_csv.csv"
         sampled_excel_benchmark = sample_benchmark_by_category(
             excel_benchmark,
             per_category=5,
-            output_path=excel_output_file  # 自动保存为 csv 格式
+            output_path=excel_output_file  # Auto-save as csv format
         )
         
-        print(f"✓ 从 Excel 加载并采样完成，共 {len(sampled_excel_benchmark.examples)} 道题目")
-        print(f"✓ 采样结果已自动保存为 csv: {excel_output_file}")
+        print(f"✓ Loading from Excel and sampling completed, {len(sampled_excel_benchmark.examples)} questions total")
+        print(f"✓ Sampling results auto-saved as csv: {excel_output_file}")
         print()
     
     print("\n" + "=" * 80)
-    print("示例完成！")
+    print("Example completed!")
     print("=" * 80)
-    print(f"\n输出文件保存在: {output_dir}")
-    print("说明: 输出格式根据输入格式自动选择（JSON 输入 -> JSON 输出，csv 输入 -> csv 输出）")
+    print(f"\nOutput files saved to: {output_dir}")
+    print("Note: Output format is automatically selected based on input format (JSON input -> JSON output, csv input -> csv output)")
 
 
 if __name__ == "__main__":
     main()
-

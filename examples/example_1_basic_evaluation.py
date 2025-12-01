@@ -1,88 +1,98 @@
 """
-示例 1: 基础评估功能
-展示如何使用 HydroBench 库进行单个模型的评估
+Example 1: Basic Evaluation Functionality
+Demonstrates how to use the HydroBench library to evaluate a single model
 """
 
 from utils import setup_package_path, get_output_dir, get_test_data_path
 
-# 设置包路径
+# Setup package path
 PROJECT_ROOT = setup_package_path()
 
-from hydrobench import Benchmark, load_builtin_benchmark, load_predictions_from_excel
+from hydrosebench import Benchmark, load_builtin_benchmark, load_predictions_from_excel
 
 
 def main():
-    """基础评估示例"""
+    """Basic evaluation example"""
     print("=" * 80)
-    print("示例 1: 基础评估功能")
+    print("Example 1: Basic Evaluation Functionality")
     print("=" * 80)
     print()
     
-    # 1. 加载内置的测评集
-    print("步骤 1: 加载测评集...")
-    benchmark = load_builtin_benchmark("hydrobench")
-    print(f"✓ 已加载测评集，共 {len(benchmark.examples)} 道题目")
+    # 1. Load built-in benchmark
+    print("Step 1: Loading benchmark...")
+    benchmark = load_builtin_benchmark("hydrosebench")
+    print(f"✓ Benchmark loaded, {len(benchmark.examples)} questions total")
     print()
     
-    # 2. 加载模型预测结果（从 CSV 或 Excel 文件）
-    print("步骤 2: 加载模型预测结果...")
+    # 2. Load model predictions (from CSV or Excel file)
+    print("Step 2: Loading model predictions...")
     excel_path = get_test_data_path(PROJECT_ROOT)
     
     if not excel_path.exists():
-        print(f"⚠ 示例文件不存在: {excel_path}")
-        print("请确保 test.csv 或 test.xlsx 文件存在，或修改 excel_path 指向您的数据文件")
+        print(f"⚠ Example file does not exist: {excel_path}")
+        print("Please ensure test.csv or test.xlsx file exists, or modify excel_path to point to your data file")
         return
     
-    # 假设 CSV/Excel 文件中有一个名为 "DeepSeek-V3.2-Exp" 的列包含模型答案
-    # load_predictions_from_excel 函数支持 CSV 和 Excel 格式（自动识别）
+    # Assume CSV/Excel file has a column named "DeepSeek-V3.2-Exp" containing model answers
+    # load_predictions_from_excel function supports both CSV and Excel formats (auto-detected)
     predictions = load_predictions_from_excel(
         excel_path,
         id_col="ID",
-        answer_col="DeepSeek-V3.2-Exp"  # 请根据实际列名修改
+        answer_col="DeepSeek-V3.2-Exp"  # Please modify according to actual column name
     )
-    print(f"✓ 已加载 {len(predictions)} 个预测结果")
+    
+    # Filter out predictions with empty answers (only calculate rows with values)
+    from utils import filter_empty_answers
+    original_count = len(predictions) if isinstance(predictions, (dict, list)) else 0
+    predictions = filter_empty_answers(predictions)
+    filtered_count = len(predictions) if isinstance(predictions, (dict, list)) else 0
+    
+    if original_count != filtered_count:
+        print(f"✓ Loaded {original_count} predictions, filtered {original_count - filtered_count} empty answers")
+        print(f"✓ Using {filtered_count} predictions with non-empty answers")
+    else:
+        print(f"✓ Loaded {filtered_count} predictions")
     print()
     
-    # 3. 计算得分
-    print("步骤 3: 计算得分...")
+    # 3. Calculate scores
+    print("Step 3: Calculating scores...")
     report = benchmark.score(predictions)
     
-    # 4. 显示结果
+    # 4. Display results
     print("\n" + "=" * 80)
-    print("评估结果")
+    print("Evaluation Results")
     print("=" * 80)
     print(report.summary())
     print()
     
-    # 5. 保存报告（可选）
+    # 5. Save reports (optional)
     output_dir = get_output_dir(PROJECT_ROOT, "example_1_basic_evaluation")
     
-    # 保存 JSON 报告
+    # Save JSON report
     json_file = output_dir / "basic_evaluation_report.json"
     json_file.write_text(report.to_json(), encoding="utf-8")
-    print(f"✓ JSON 报告已保存: {json_file}")
+    print(f"✓ JSON report saved: {json_file}")
     
-    # 保存 CSV 报告（轻量，推荐）
+    # Save CSV report (lightweight, recommended)
     try:
         csv_file = output_dir / "basic_evaluation_report.csv"
         report.to_csv(csv_file, benchmark=benchmark)
-        print(f"✓ CSV 报告已保存: {csv_file}")
+        print(f"✓ CSV report saved: {csv_file}")
     except ImportError:
-        print("⚠ 未安装 pandas，跳过 CSV 报告生成")
+        print("⚠ pandas not installed, skipping CSV report generation")
     
-    # 保存 Excel 报告（如果安装了 pandas 和 openpyxl）
+    # Save Excel report (if pandas and openpyxl are installed)
     try:
         excel_file = output_dir / "basic_evaluation_report.xlsx"
         report.to_excel(excel_file, benchmark=benchmark)
-        print(f"✓ Excel 报告已保存: {excel_file}")
+        print(f"✓ Excel report saved: {excel_file}")
     except ImportError:
-        print("⚠ 未安装 pandas 或 openpyxl，跳过 Excel 报告生成")
+        print("⚠ pandas or openpyxl not installed, skipping Excel report generation")
     
     print("\n" + "=" * 80)
-    print("示例完成！")
+    print("Example completed!")
     print("=" * 80)
 
 
 if __name__ == "__main__":
     main()
-

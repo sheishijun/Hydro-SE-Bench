@@ -12,9 +12,9 @@
 ### Method 1: Using requirements.txt (Recommended)
 
 ```bash
-cd hydrobench-package
+cd hydrosebench-package
 pip install -r requirements.txt
-cd hydrobench-eval
+cd hydrosebench-eval
 pip install -e .
 ```
 
@@ -22,7 +22,7 @@ pip install -e .
 
 ```bash
 pip install pandas>=2.0 openpyxl>=3.0
-cd hydrobench-eval
+cd hydrosebench-eval
 pip install -e .
 ```
 
@@ -31,10 +31,10 @@ pip install -e .
 ### 1. Single Model Evaluation
 
 ```python
-from hydrobench import load_builtin_benchmark, load_predictions_from_excel
+from hydrosebench import load_builtin_benchmark, load_predictions_from_excel
 
 # Load benchmark
-benchmark = load_builtin_benchmark("hydrobench")
+benchmark = load_builtin_benchmark("hydrosebench")
 
 # Load predictions
 predictions = load_predictions_from_excel(
@@ -51,29 +51,29 @@ print(report.summary())
 ### 2. Batch Evaluation
 
 ```python
-from hydrobench import evaluate_all_models, create_summary_excel
+from hydrosebench import evaluate_all_models, create_summary_excel
 from pathlib import Path
 
 # Batch evaluation
 summary = evaluate_all_models(
     "test.xlsx",
-    benchmark_name="hydrobench",
+    benchmark_name="hydrosebench",
     output_dir="./results"
 )
 
 # Generate summary report
-from hydrobench import load_builtin_benchmark
-benchmark = load_builtin_benchmark("hydrobench")
+from hydrosebench import load_builtin_benchmark
+benchmark = load_builtin_benchmark("hydrosebench")
 create_summary_excel(summary, Path("./results"), benchmark)
 ```
 
 ### 3. Sampling Functionality
 
 ```python
-from hydrobench import load_builtin_benchmark, sample_benchmark_by_category
+from hydrosebench import load_builtin_benchmark, sample_benchmark_by_category
 
 # Load benchmark
-benchmark = load_builtin_benchmark("hydrobench")
+benchmark = load_builtin_benchmark("hydrosebench")
 
 # Sampling (auto-save, format automatically selected based on input)
 sampled = sample_benchmark_by_category(
@@ -88,7 +88,7 @@ sampled = sample_benchmark_by_category(
 ### Custom Benchmark
 
 ```python
-from hydrobench import load_benchmark_from_file
+from hydrosebench import load_benchmark_from_file
 
 # Load custom benchmark from Excel
 benchmark = load_benchmark_from_file(
@@ -107,7 +107,7 @@ The sampling functionality automatically selects output format based on input fo
 
 ```python
 # Load from JSON, output JSON
-benchmark = load_builtin_benchmark("hydrobench")
+benchmark = load_builtin_benchmark("hydrosebench")
 sampled = sample_benchmark_by_category(
     benchmark,
     per_category=5,
@@ -130,7 +130,7 @@ sampled = sample_benchmark_by_category(
 A: The sampling functionality auto-detects, but you can also specify manually:
 
 ```python
-from hydrobench import save_benchmark
+from hydrosebench import save_benchmark
 
 save_benchmark(benchmark, "output.xlsx", format="excel")
 save_benchmark(benchmark, "output.json", format="json")
@@ -153,12 +153,12 @@ benchmark = load_benchmark_from_file(
 A: Check the package's `__init__.py` or run:
 
 ```python
-from hydrobench import *
+from hydrosebench import *
 help(load_builtin_benchmark)  # View function help
 ```
 
 ## Additional Resources
 
-- Complete API Documentation: `hydrobench-eval/README.md`
+- Complete API Documentation: `hydrosebench-eval/README.md`
 - Example Code: `examples/`
 - Quick Start: `QUICKSTART.md`

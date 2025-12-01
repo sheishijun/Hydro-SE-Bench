@@ -4,17 +4,17 @@
 
 ### 1. Install Python Package
 
-Navigate to the `hydrobench-eval` directory and install:
+Navigate to the `hydrosebench-eval` directory and install:
 
 ```bash
-cd hydrobench-eval
+cd hydrosebench-eval
 pip install -e .
 ```
 
 Or install directly (without entering the directory):
 
 ```bash
-pip install -e hydrobench-eval
+pip install -e hydrosebench-eval
 ```
 
 ### 2. Verify Installation
@@ -22,58 +22,55 @@ pip install -e hydrobench-eval
 Run the following command to verify the installation was successful:
 
 ```python
-python -c "from hydrobench import load_builtin_benchmark; print('Installation successful!')"
+python -c "from hydrosebench import load_builtin_benchmark; print('Installation successful!')"
 ```
 
 ## Download Dataset Files
 
-Dataset files are located in the `hydrobench-eval/hydrobench/data/` directory, available in the following formats:
+Dataset files are located in the `hydrosebench-eval/hydrosebench/data/` directory, available in the following formats:
 
-- **hydrobench.json**: Complete dataset in JSON format
-- **hydrobench.csv**: Dataset in CSV format (lighter weight, suitable for version control)
+- **hydrosebench.json**: Complete dataset in JSON format
+- **hydrosebench.csv**: Dataset in CSV format (lighter weight, suitable for version control)
 
 ### Method 1: Download Using Python API
 
-If the `hydrobench` Python package is installed, you can download using the following code:
+If the `hydrosebench` Python package is installed, you can download using the following code:
 
 ```python
-from hydrobench import download_hydrobench_data
+from hydrosebench import download_hydrosebench_data
 from pathlib import Path
 
 # Download JSON file to current directory
-json_path = download_hydrobench_data("json")
+json_path = download_hydrosebench_data("json")
 print(f"JSON file downloaded to: {json_path}")
 
 # Download CSV file to specified directory
-csv_path = download_hydrobench_data("csv", Path("./data/hydrobench.csv"))
+csv_path = download_hydrosebench_data("csv", Path("./data/hydrosebench.csv"))
 print(f"CSV file downloaded to: {csv_path}")
-
-# Download Excel file (if available in package)
-xlsx_path = download_hydrobench_data("xlsx", Path("./data/hydrobench.xlsx"))
 ```
 
 ### Method 2: Download Using Command Line
 
 ```bash
 # Download all formats to current directory
-python -m hydrobench download
+python -m hydrosebench download
 
 # Download only JSON file
-python -m hydrobench download --format json
+python -m hydrosebench download --format json
 
 # Download only CSV file (recommended, lighter weight)
-python -m hydrobench download --format csv
+python -m hydrosebench download --format csv
 
 # Download to specified directory
-python -m hydrobench download --output ./data
+python -m hydrosebench download --output ./data
 
 # Download specified format to specified path
-python -m hydrobench download --format csv --output ./my_data/hydrobench.csv
+python -m hydrosebench download --format csv --output ./my_data/hydrosebench.csv
 ```
 
 ### Method 3: Direct File Access
 
-Dataset files can also be accessed directly from the `hydrobench-eval/hydrobench/data/` directory without downloading.
+Dataset files can also be accessed directly from the `hydrosebench-eval/hydrosebench/data/` directory without downloading.
 
 ### Run Download Example
 
@@ -109,13 +106,13 @@ pip install pandas>=2.0 openpyxl>=3.0
 
 ## Common Issues
 
-### Issue 1: Cannot find hydrobench module
+### Issue 1: Cannot find hydrosebench module
 
 **Solution**: Ensure the package is installed, or check Python path settings.
 
 ### Issue 2: Cannot find data files
 
-**Solution**: Data files are located in the `hydrobench-eval/hydrobench/data/` directory. Ensure this directory exists.
+**Solution**: Data files are located in the `hydrosebench-eval/hydrosebench/data/` directory. Ensure this directory exists.
 
 ### Issue 3: Excel file read error
 
@@ -127,4 +124,4 @@ pip install openpyxl
 ## Next Steps
 
 - Check `examples/README.md` for all examples
-- Check `hydrobench-eval/README.md` for complete API documentation
+- Check `hydrosebench-eval/README.md` for complete API documentation

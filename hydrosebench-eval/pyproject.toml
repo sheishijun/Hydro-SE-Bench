@@ -3,24 +3,24 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hydrobench"
+name = "hydrosebench"
 version = "0.1.0"
-description = "A Python package for evaluating model performance on the HydroBench benchmark dataset."
+description = "A Python package for evaluating model performance on the HydroSEBench benchmark dataset."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
-  { name = "HydroBench Maintainers", email = "hydrobench@example.com" }
+  { name = "HydroSEBench Maintainers", email = "hydrosebench@example.com" }
 ]
 maintainers = [
-  { name = "HydroBench Maintainers", email = "hydrobench@example.com" }
+  { name = "HydroSEBench Maintainers", email = "hydrosebench@example.com" }
 ]
 keywords = [
   "benchmark",
   "evaluation",
   "nlp",
   "machine-learning",
-  "hydrobench",
+  "hydrosebench",
   "scoring",
   "assessment",
 ]
@@ -55,17 +55,18 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/hydrobench"
-Documentation = "https://github.com/yourusername/hydrobench#readme"
-Repository = "https://github.com/yourusername/hydrobench"
-Issues = "https://github.com/yourusername/hydrobench/issues"
+Homepage = "https://github.com/sheishijun/Hydro-SE-Bench"
+Documentation = "https://github.com/sheishijun/Hydro-SE-Bench#readme"
+Repository = "https://github.com/sheishijun/Hydro-SE-Bench"
+Issues = "https://github.com/sheishijun/Hydro-SE-Bench/issues"
+"Bug Tracker" = "https://github.com/sheishijun/Hydro-SE-Bench/issues"
 
 [project.scripts]
-hydrobench = "hydrobench.cli:main"
+hydrosebench = "hydrosebench.cli:main"
 
 [tool.setuptools]
-packages = ["hydrobench"]
+packages = ["hydrosebench"]
 
 [tool.setuptools.package-data]
-hydrobench = ["data/*.json", "data/*.csv", "data/*.xlsx"]
+hydrosebench = ["data/*.json", "data/*.csv"]
 

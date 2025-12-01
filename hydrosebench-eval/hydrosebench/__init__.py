@@ -1,7 +1,9 @@
-"""Public package interface for the HydroBench evaluation helpers."""
+"""Public package interface for the HydroSEBench evaluation helpers."""
+
+__version__ = "0.1.0"
 
 from .benchmark import Benchmark, Example
-from .datasets import BUILTIN_BENCHMARKS, download_hydrobench_data, load_builtin_benchmark
+from .datasets import BUILTIN_BENCHMARKS, download_hydrosebench_data, load_builtin_benchmark
 from .excel_loader import load_benchmark_from_file, load_predictions_from_excel
 from .scoring import ExampleScore, ScoreReport
 from .batch_evaluate import evaluate_all_models, identify_model_columns
@@ -13,13 +15,14 @@ from .reporting import (
 )
 
 __all__ = [
+    "__version__",
     "Benchmark",
     "Example",
     "ExampleScore",
     "ScoreReport",
     "BUILTIN_BENCHMARKS",
     "load_builtin_benchmark",
-    "download_hydrobench_data",
+    "download_hydrosebench_data",
     "load_benchmark_from_file",
     "load_predictions_from_excel",
     "evaluate_all_models",

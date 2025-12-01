@@ -12,7 +12,7 @@
 3. **Create API Token**
    - After logging in, visit: https://test.pypi.org/manage/account/token/
    - Click "Add API token"
-   - Enter Token name (e.g., "hydrobench-upload")
+   - Enter Token name (e.g., "hydrosebench-upload")
    - Select Scope:
      - **Entire account**: Can upload all projects
      - **Specific project**: Can only upload specified project (more secure)

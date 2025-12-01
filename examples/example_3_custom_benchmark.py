@@ -1,14 +1,14 @@
 """
-示例 3: 使用自定义测评集
-展示如何从 CSV 或 Excel 文件加载自定义测评集并进行评估
+Example 3: Using Custom Benchmark
+Demonstrates how to load a custom benchmark from CSV or Excel file and perform evaluation
 """
 
 from utils import setup_package_path, get_output_dir, get_test_data_path, get_benchmark_data_path
 
-# 设置包路径
+# Setup package path
 PROJECT_ROOT = setup_package_path()
 
-from hydrobench import (
+from hydrosebench import (
     load_benchmark_from_file,
     load_predictions_from_excel,
     Benchmark,
@@ -16,23 +16,23 @@ from hydrobench import (
 
 
 def main():
-    """自定义测评集示例"""
+    """Custom benchmark example"""
     print("=" * 80)
-    print("示例 3: 使用自定义测评集")
+    print("Example 3: Using Custom Benchmark")
     print("=" * 80)
     print()
     
-    # 1. 从 CSV 或 Excel 文件加载自定义测评集
-    print("步骤 1: 加载自定义测评集...")
+    # 1. Load custom benchmark from CSV or Excel file
+    print("Step 1: Loading custom benchmark...")
     benchmark_excel = get_benchmark_data_path(PROJECT_ROOT)
     
     if not benchmark_excel.exists():
-        print(f"⚠ 示例文件不存在: {benchmark_excel}")
-        print("请确保测评集 CSV 或 Excel 文件存在")
+        print(f"⚠ Example file does not exist: {benchmark_excel}")
+        print("Please ensure benchmark CSV or Excel file exists")
         return
     
-    # 先尝试读取文件检查列（可选，用于显示信息）
-    # 如果失败，直接加载 benchmark 即可
+    # Try reading file to check columns first (optional, for display purposes)
+    # If it fails, just load the benchmark directly
     import pandas as pd
     file_ext = benchmark_excel.suffix.lower()
     has_level_col = None
@@ -40,8 +40,8 @@ def main():
     
     try:
         if file_ext == ".csv":
-            # 尝试读取前几行检查列（使用与包中相同的逻辑）
-            # 这里使用简单的方式，如果失败就跳过检查
+            # Try reading first few rows to check columns (using same logic as package)
+            # Using simple approach here, skip check if it fails
             try:
                 df_check = pd.read_csv(benchmark_excel, nrows=5, engine='python', encoding='utf-8')
             except:
@@ -55,129 +55,140 @@ def main():
             file_type = "Excel"
         
         if df_check is not None:
-            print(f"{file_type} 文件中的列: {list(df_check.columns)}")
+            print(f"{file_type} file columns: {list(df_check.columns)}")
             has_level_col = "Level" in df_check.columns
             has_type_col = "Type" in df_check.columns
-            print(f"  - 是否有 'Level' 列: {has_level_col}")
-            print(f"  - 是否有 'Type' 列: {has_type_col}")
+            print(f"  - Has 'Level' column: {has_level_col}")
+            print(f"  - Has 'Type' column: {has_type_col}")
             
             if has_level_col:
-                print(f"  - 'Level' 列的前几个值: {df_check['Level'].head(3).tolist()}")
+                print(f"  - First few 'Level' values: {df_check['Level'].head(3).tolist()}")
             if has_type_col:
-                print(f"  - 'Type' 列的前几个值: {df_check['Type'].head(3).tolist()}")
+                print(f"  - First few 'Type' values: {df_check['Type'].head(3).tolist()}")
     except Exception as e:
-        print(f"⚠ 无法读取文件进行列检查（将直接加载 benchmark）: {e}")
+        print(f"⚠ Unable to read file for column check (will load benchmark directly): {e}")
     
-    # 加载 benchmark，使用包中的函数（它会自动处理 CSV 读取的兼容性问题）
-    # 明确指定列名以确保正确读取 Level 和 Type
+    # Load benchmark using package function (it automatically handles CSV reading compatibility issues)
+    # Explicitly specify column names to ensure correct reading of Level and Type
     benchmark = load_benchmark_from_file(
         benchmark_excel,
-        level_col="Level" if has_level_col else None,  # 难度列名（如果检测到）
-        type_col="Type" if has_type_col else None,     # 题型列名（如果检测到）
-        category_col="ID",   # 类别列名（从 ID 中提取）
+        level_col="Level" if has_level_col else None,  # Difficulty column name (if detected)
+        type_col="Type" if has_type_col else None,     # Question type column name (if detected)
+        category_col="ID",   # Category column name (extracted from ID)
     )
-    print(f"✓ 已加载自定义测评集，共 {len(benchmark.examples)} 道题目")
+    print(f"✓ Custom benchmark loaded, {len(benchmark.examples)} questions total")
     
-    # 检查是否有难度和题型信息
+    # Check if difficulty and question type information exists
     examples_with_level = sum(1 for ex in benchmark.examples if ex.level)
     examples_with_type = sum(1 for ex in benchmark.examples if ex.question_type)
     examples_with_category = sum(1 for ex in benchmark.examples if ex.category)
-    print(f"  - 包含难度信息的题目: {examples_with_level}/{len(benchmark.examples)}")
-    print(f"  - 包含题型信息的题目: {examples_with_type}/{len(benchmark.examples)}")
-    print(f"  - 包含类别信息的题目: {examples_with_category}/{len(benchmark.examples)}")
+    print(f"  - Questions with difficulty info: {examples_with_level}/{len(benchmark.examples)}")
+    print(f"  - Questions with question type info: {examples_with_type}/{len(benchmark.examples)}")
+    print(f"  - Questions with category info: {examples_with_category}/{len(benchmark.examples)}")
     
-    # 显示一些示例的 level 和 type 值
+    # Display some example level and type values
     if examples_with_level > 0:
         sample_levels = [ex.level for ex in benchmark.examples[:5] if ex.level]
-        print(f"  - 示例 Level 值: {sample_levels[:3]}")
+        print(f"  - Example Level values: {sample_levels[:3]}")
     if examples_with_type > 0:
         sample_types = [ex.question_type for ex in benchmark.examples[:5] if ex.question_type]
-        print(f"  - 示例 Type 值: {sample_types[:3]}")
+        print(f"  - Example Type values: {sample_types[:3]}")
     
     if examples_with_level == 0:
-        print(f"  ⚠ 警告: {file_type} 文件中可能没有 'Level' 列，或列名不匹配")
+        print(f"  ⚠ Warning: {file_type} file may not have 'Level' column, or column name doesn't match")
         if not has_level_col:
-            print(f"     提示: {file_type} 文件中确实没有 'Level' 列")
-            print("     解决方案: 如果列名不同（如'难度'），请修改 level_col 参数")
+            print(f"     Hint: {file_type} file indeed doesn't have 'Level' column")
+            print("     Solution: If column name is different (e.g., 'Difficulty'), modify level_col parameter")
     if examples_with_type == 0:
-        print(f"  ⚠ 警告: {file_type} 文件中可能没有 'Type' 列，或列名不匹配")
+        print(f"  ⚠ Warning: {file_type} file may not have 'Type' column, or column name doesn't match")
         if not has_type_col:
-            print(f"     提示: {file_type} 文件中确实没有 'Type' 列")
-            print("     解决方案: 如果列名不同（如'题型'），请修改 type_col 参数")
+            print(f"     Hint: {file_type} file indeed doesn't have 'Type' column")
+            print("     Solution: If column name is different (e.g., 'Question Type'), modify type_col parameter")
     print()
     
-    # 2. 加载模型预测结果
-    print("步骤 2: 加载模型预测结果...")
+    # 2. Load model predictions
+    print("Step 2: Loading model predictions...")
     predictions_excel = get_test_data_path(PROJECT_ROOT)
     
     if not predictions_excel.exists():
-        print(f"⚠ 示例文件不存在: {predictions_excel}")
-        print("请确保预测结果 CSV 或 Excel 文件存在")
+        print(f"⚠ Example file does not exist: {predictions_excel}")
+        print("Please ensure predictions CSV or Excel file exists")
         return
     
     predictions = load_predictions_from_excel(
         predictions_excel,
         id_col="ID",
-        answer_col="DeepSeek-V3.2-Exp"  # 请根据实际列名修改
+        answer_col="DeepSeek-V3.2-Exp"  # Please modify according to actual column name
     )
-    print(f"✓ 已加载 {len(predictions)} 个预测结果")
+    
+    # Filter out predictions with empty answers (only calculate rows with values)
+    from utils import filter_empty_answers
+    original_count = len(predictions) if isinstance(predictions, (dict, list)) else 0
+    predictions = filter_empty_answers(predictions)
+    filtered_count = len(predictions) if isinstance(predictions, (dict, list)) else 0
+    
+    if original_count != filtered_count:
+        print(f"✓ Loaded {original_count} predictions, filtered {original_count - filtered_count} empty answers")
+        print(f"✓ Using {filtered_count} predictions with non-empty answers")
+    else:
+        print(f"✓ Loaded {filtered_count} predictions")
     print()
     
-    # 3. 计算得分
-    print("步骤 3: 计算得分...")
+    # 3. Calculate scores
+    print("Step 3: Calculating scores...")
     report = benchmark.score(predictions)
     
-    # 4. 显示结果
+    # 4. Display results
     print("\n" + "=" * 80)
-    print("评估结果")
+    print("Evaluation Results")
     print("=" * 80)
     print(report.summary())
     print()
     
-    # 5. 显示按类别统计
+    # 5. Display statistics by category
     category_stats = report.get_category_stats(benchmark)
     if category_stats:
-        print("\n按类别统计：")
+        print("\nStatistics by Category:")
         print("-" * 80)
         for category, stats in sorted(category_stats.items()):
             print(f"{category}: {stats['correct']}/{stats['total']} ({stats['accuracy']:.2%})")
     
-    # 6. 显示按难度统计
+    # 6. Display statistics by difficulty
     level_stats = report.get_level_stats(benchmark)
     if level_stats:
-        print("\n按难度统计：")
+        print("\nStatistics by Difficulty:")
         print("-" * 80)
         for level, stats in sorted(level_stats.items()):
             print(f"{level}: {stats['correct']}/{stats['total']} ({stats['accuracy']:.2%})")
     
-    # 7. 保存报告（可选）
+    # 7. Save reports (optional)
     output_dir = get_output_dir(PROJECT_ROOT, "example_3_custom_benchmark")
     
-    # 保存 JSON 报告
+    # Save JSON report
     json_file = output_dir / "custom_benchmark_report.json"
     json_file.write_text(report.to_json(), encoding="utf-8")
-    print(f"\n✓ JSON 报告已保存: {json_file}")
+    print(f"\n✓ JSON report saved: {json_file}")
     
-    # 保存 CSV 报告（轻量，推荐）
+    # Save CSV report (lightweight, recommended)
     try:
         csv_file = output_dir / "custom_benchmark_report.csv"
         report.to_csv(csv_file, benchmark=benchmark)
-        print(f"✓ CSV 报告已保存: {csv_file}")
+        print(f"✓ CSV report saved: {csv_file}")
     except ImportError:
-        print("⚠ 未安装 pandas，跳过 CSV 报告生成")
+        print("⚠ pandas not installed, skipping CSV report generation")
     
-    # 保存 Excel 报告（如果安装了 pandas 和 openpyxl）
+    # Save Excel report (if pandas and openpyxl are installed)
     try:
         excel_file = output_dir / "custom_benchmark_report.xlsx"
         report.to_excel(excel_file, benchmark=benchmark)
-        print(f"✓ Excel 报告已保存: {excel_file}")
+        print(f"✓ Excel report saved: {excel_file}")
     except ImportError:
-        print("⚠ 未安装 pandas 或 openpyxl，跳过 Excel 报告生成")
+        print("⚠ pandas or openpyxl not installed, skipping Excel report generation")
     
     print("\n" + "=" * 80)
-    print("示例完成！")
+    print("Example completed!")
     print("=" * 80)
-    print(f"\n输出文件保存在: {output_dir}")
+    print(f"\nOutput files saved to: {output_dir}")
 
 
 if __name__ == "__main__":

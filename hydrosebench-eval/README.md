@@ -1,18 +1,18 @@
-# HydroBench
+# HydroSEBench
 
-`HydroBench` provides a lightweight Python package for calculating model scores based on the HydroBench evaluation dataset.
+`HydroSEBench` provides a lightweight Python package for calculating model scores based on the HydroSEBench evaluation dataset.
 
 ## Core Features
 
-- **Built-in Dataset**: Package includes `hydrobench.json` and `hydrobench.csv` files, ready to use out of the box
-- **Data File Download**: Support downloading package data files via code or command line (JSON, CSV, Excel)
+- **Built-in Dataset**: Package includes `hydrosebench.json` and `hydrosebench.csv` files, ready to use out of the box
+- **Data File Download**: Support downloading package data files via code or command line (JSON, CSV)
 - **Multiple Format Support**: Support JSON, CSV, and Excel formats for benchmarks and prediction results
 - **Batch Evaluation**: Support evaluating answers from multiple models at once
 - **Flexible Answer Formats**: Support single-choice and multiple-choice questions; compatible with strings, lists, dictionaries, and other input formats
 
 ## Dataset Statistics
 
-The HydroBench dataset contains **4,000** questions covering nine core professional directions in water conservancy and hydropower, comprehensively assessing models' capabilities in water engineering expertise, engineering applications, and reasoning calculations.
+The HydroSEBench dataset contains **4,000** questions covering nine core professional directions in water conservancy and hydropower, comprehensively assessing models' capabilities in water engineering expertise, engineering applications, and reasoning calculations.
 
 ### Overall Overview
 
@@ -34,17 +34,19 @@ The dataset is divided into three difficulty levels, balancing fundamental knowl
 
 The dataset covers the following nine professional directions, each containing a different number of questions:
 
-| Category Code | Category Name | Total | Percentage |
-|---------------|---------------|-------|------------|
-| **HWR** | Hydrology and Water Resources | 500 | 12.5% |
-| **GE** | Geotechnical Engineering | 500 | 12.5% |
-| **HSE** | Hydraulic Structures and Equipment | 500 | 12.5% |
-| **ESM** | Engineering Safety and Management | 500 | 12.5% |
-| **HRD** | Hydraulics and River Dynamic | 500 | 12.5% |
-| **M** | Meteorology | 500 | 12.5% |
-| **PS** | Power System | 500 | 12.5% |
-| **BK** | Background Knowledge | 250 | 6.25% |
-| **IS** | Industry Standard | 250 | 6.25% |
+| Category Code | Category Name | Total | Single-Choice | Multiple-Choice | Basic Conceptual Knowledge | Engineering Applications | Reasoning and Calculation |
+|---------------|---------------|-------|---------------|-----------------|---------------------------|--------------------------|---------------------------|
+| **BK** | Background Knowledge | 250 | 217 | 33 | 250 | 0 | 0 |
+| **IS** | Industry Standard | 250 | 160 | 90 | 0 | 250 | 0 |
+| **HWR** | Hydrology and Water Resources | 500 | 311 | 189 | 200 | 200 | 100 |
+| **GE** | Geotechnical Engineering | 500 | 297 | 203 | 200 | 200 | 100 |
+| **HSE** | Hydraulic Structures and Equipment | 500 | 336 | 164 | 200 | 200 | 100 |
+| **ESM** | Engineering Safety and Management | 500 | 318 | 182 | 200 | 200 | 100 |
+| **HRD** | Hydraulics and River Dynamic | 500 | 358 | 142 | 200 | 200 | 100 |
+| **M** | Meteorology | 500 | 336 | 164 | 200 | 200 | 100 |
+| **PS** | Power System | 500 | 363 | 137 | 200 | 200 | 100 |
+
+> Note: Detailed statistics can be obtained by running the `final_stats.py` or `calc_and_save.py` scripts. After running the script, copy the output results into the table above.
 
 ### Dataset Features
 
@@ -55,7 +57,7 @@ The dataset covers the following nine professional directions, each containing a
 
 ## Installation
 
-Run in the `hydrobench-eval` directory:
+Run in the `hydrosebench-eval` directory:
 
 ```bash
 pip install -e .
@@ -68,35 +70,34 @@ pip install -e .
 If you need to obtain the package data files:
 
 ```python
-from hydrobench import download_hydrobench_data
+from hydrosebench import download_hydrosebench_data
 from pathlib import Path
 
 # Download to current directory
-download_hydrobench_data("json")
-download_hydrobench_data("csv")
-download_hydrobench_data("xlsx")
+download_hydrosebench_data("json")
+download_hydrosebench_data("csv")
 
 # Download to specified path
-download_hydrobench_data("json", Path("./data/hydrobench.json"))
-download_hydrobench_data("csv", Path("./data/hydrobench.csv"))
+download_hydrosebench_data("json", Path("./data/hydrosebench.json"))
+download_hydrosebench_data("csv", Path("./data/hydrosebench.csv"))
 ```
 
 Or use command line:
 
 ```bash
-python -m hydrobench download                    # Download all formats to current directory
-python -m hydrobench download --format csv     # Download CSV only
-python -m hydrobench download --format json    # Download JSON only
-python -m hydrobench download --output ./data   # Download to specified directory
+python -m hydrosebench download                    # Download all formats to current directory
+python -m hydrosebench download --format csv     # Download CSV only
+python -m hydrosebench download --format json    # Download JSON only
+python -m hydrosebench download --output ./data   # Download to specified directory
 ```
 
 ### 2. Evaluate Using Built-in Benchmark
 
 ```python
-from hydrobench import load_builtin_benchmark
+from hydrosebench import load_builtin_benchmark
 
 # Load built-in benchmark
-benchmark = load_builtin_benchmark("hydrobench")
+benchmark = load_builtin_benchmark("hydrosebench")
 
 # Prepare model predictions (dictionary format: {question_id: answer})
 predictions = {
@@ -114,9 +115,9 @@ print(f"Accuracy: {report.accuracy:.2%}")
 ### 3. Load Predictions from CSV or Excel Files
 
 ```python
-from hydrobench import load_builtin_benchmark, load_predictions_from_excel
+from hydrosebench import load_builtin_benchmark, load_predictions_from_excel
 
-benchmark = load_builtin_benchmark("hydrobench")
+benchmark = load_builtin_benchmark("hydrosebench")
 
 # Load model predictions from CSV or Excel
 predictions = load_predictions_from_excel(
@@ -134,12 +135,12 @@ print(report.summary())
 If the CSV or Excel file contains answer columns from multiple models:
 
 ```python
-from hydrobench import evaluate_all_models
+from hydrosebench import evaluate_all_models
 
 # Automatically identify all model columns and batch evaluate
 summary = evaluate_all_models(
     "test.csv",  # or "test.xlsx"
-    benchmark_name="hydrobench",
+    benchmark_name="hydrosebench",
     output_dir="./results"
 )
 
@@ -154,13 +155,13 @@ for result in summary["results"]:
 
 ```bash
 # Using JSON format prediction results
-python -m hydrobench evaluate \
-  --benchmark hydrobench \
+python -m hydrosebench evaluate \
+  --benchmark hydrosebench \
   --predictions model_output.json
 
 # Using CSV or Excel format prediction results
-python -m hydrobench evaluate \
-  --benchmark hydrobench \
+python -m hydrosebench evaluate \
+  --benchmark hydrosebench \
   --predictions model_output.csv \
   --predictions-id-col "ID" \
   --predictions-answer-col "Answer" \
@@ -170,9 +171,9 @@ python -m hydrobench evaluate \
 ### Batch Evaluate Multiple Models
 
 ```bash
-python -m hydrobench batch-evaluate \
+python -m hydrosebench batch-evaluate \
   --excel test.csv \
-  --benchmark hydrobench \
+  --benchmark hydrosebench \
   --output-dir ./results
 ```
 
@@ -180,14 +181,14 @@ python -m hydrobench batch-evaluate \
 
 ```bash
 # Load benchmark from CSV or Excel file
-python -m hydrobench evaluate \
+python -m hydrosebench evaluate \
   --benchmark-excel custom_benchmark.csv \
   --predictions model_output.csv \
   --predictions-id-col "ID" \
   --predictions-answer-col "Answer"
 
 # Load benchmark from JSON file
-python -m hydrobench evaluate \
+python -m hydrosebench evaluate \
   --benchmark-path custom_benchmark.json \
   --predictions model_output.json
 ```
@@ -235,9 +236,9 @@ Supports the following three formats:
 ### Random Sampling
 
 ```python
-from hydrobench import load_builtin_benchmark, sample_benchmark_by_category
+from hydrosebench import load_builtin_benchmark, sample_benchmark_by_category
 
-benchmark = load_builtin_benchmark("hydrobench")
+benchmark = load_builtin_benchmark("hydrosebench")
 
 # Randomly sample the same number of questions from each category
 sampled = sample_benchmark_by_category(

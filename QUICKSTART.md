@@ -5,7 +5,7 @@
 ### Step 1: Install Package
 
 ```bash
-cd hydrobench-package/hydrobench-eval
+cd hydrosebench-package/hydrosebench-eval
 pip install -e .
 ```
 
@@ -21,19 +21,19 @@ python example_1_basic_evaluation.py
 ### Feature 1: Batch Evaluate Multiple Models
 
 ```python
-from hydrobench import evaluate_all_models, create_summary_excel
+from hydrosebench import evaluate_all_models, create_summary_excel
 from pathlib import Path
 
 # Batch evaluation
 summary = evaluate_all_models(
     "test.xlsx",
-    benchmark_name="hydrobench",
+    benchmark_name="hydrosebench",
     output_dir="./results"
 )
 
 # Generate summary report
-from hydrobench import load_builtin_benchmark
-benchmark = load_builtin_benchmark("hydrobench")
+from hydrosebench import load_builtin_benchmark
+benchmark = load_builtin_benchmark("hydrosebench")
 create_summary_excel(summary, Path("./results"), benchmark)
 ```
 

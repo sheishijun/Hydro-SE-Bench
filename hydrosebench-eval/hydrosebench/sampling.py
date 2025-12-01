@@ -16,7 +16,7 @@ except ImportError:
 
 from .benchmark import Benchmark, Example
 
-# 用于从题目文本中提取选项的正则表达式
+# Regular expression for extracting options from question text
 _CHOICE_PATTERN = re.compile(r"([A-Z])\s*[\.．、：:）\)]")
 
 
@@ -131,7 +131,7 @@ def sample_benchmark_by_category(
         source_path=benchmark.source_path,
     )
     
-    # 如果提供了输出路径，自动保存
+    # If output path is provided, automatically save
     if output_path:
         save_benchmark(sampled_benchmark, output_path)
     
@@ -145,25 +145,25 @@ def save_benchmark(
     format: str | None = None,
 ) -> Path:
     """
-    保存 Benchmark 到文件，根据输入格式或指定格式自动选择输出格式。
+    Save Benchmark to file, automatically select output format based on input format or specified format.
     
     Args:
-        benchmark: 要保存的 Benchmark 对象
-        output_path: 输出文件路径
-        format: 输出格式 ("csv", "excel", "json", 或 None 自动检测)
+        benchmark: Benchmark object to save
+        output_path: Output file path
+        format: Output format ("csv", "excel", "json", or None for auto-detection)
     
     Returns:
-        输出文件路径
+        Output file path
     
     Raises:
-        ValueError: 如果格式不支持或无法确定格式
-        ImportError: 如果保存 CSV/Excel 需要 pandas 但未安装
+        ValueError: If format is not supported or cannot be determined
+        ImportError: If pandas is required for CSV/Excel but not installed
     """
     output_path = Path(output_path)
     
-    # 确定输出格式
+    # Determine output format
     if format is None:
-        # 根据 benchmark 的 source_path 判断
+        # Judge based on benchmark's source_path
         if benchmark.source_path:
             source_ext = benchmark.source_path.suffix.lower()
             if source_ext == ".csv":
@@ -173,7 +173,7 @@ def save_benchmark(
             elif source_ext == ".json":
                 format = "json"
             else:
-                # 根据输出路径的扩展名判断
+                # Judge based on output path extension
                 output_ext = output_path.suffix.lower()
                 if output_ext == ".csv":
                     format = "csv"
@@ -182,10 +182,10 @@ def save_benchmark(
                 elif output_ext == ".json":
                     format = "json"
                 else:
-                    # 默认使用 CSV（更轻量）
+                    # Default to CSV (lighter weight)
                     format = "csv"
         else:
-            # 根据输出路径的扩展名判断
+            # Judge based on output path extension
             output_ext = output_path.suffix.lower()
             if output_ext == ".csv":
                 format = "csv"
@@ -194,35 +194,35 @@ def save_benchmark(
             elif output_ext == ".json":
                 format = "json"
             else:
-                # 默认使用 CSV（更轻量）
+                # Default to CSV (lighter weight)
                 format = "csv"
     
     format = format.lower()
     
     if format == "json":
-        # 保存为 JSON，格式与原始 JSON 文件一致
+        # Save as JSON, format consistent with original JSON file
         examples_data = []
         for ex in benchmark.examples:
-            # 从题目文本中提取所有选项（A, B, C, D 等）
+            # Extract all options (A, B, C, D, etc.) from question text
             option_letters = set(_CHOICE_PATTERN.findall(ex.input_text))
             
-            # 如果没有找到选项，使用正确答案中的字母
+            # If no options found, use letters from correct answer
             if not option_letters:
                 option_letters = set(ex.correct_options)
             
-            # 构建 target_scores，包含所有选项
+            # Build target_scores, including all options
             target_scores = {}
             for option in sorted(option_letters):
                 target_scores[option] = 1 if option in ex.correct_options else 0
             
-            # 构建示例数据，使用 "ID" 字段（与原始格式一致）
+            # Build example data, use "ID" field (consistent with original format)
             example_data = {
                 "input": ex.input_text,
                 "target_scores": target_scores,
-                "ID": ex.id,  # 使用 "ID" 而不是 "id"
+                "ID": ex.id,  # Use "ID" instead of "id"
             }
             
-            # 添加 metadata 中的 category, level, type
+            # Add category, level, type from metadata
             if ex.category:
                 example_data["category"] = ex.category
             if ex.level:
@@ -245,7 +245,7 @@ def save_benchmark(
         return output_path
     
     elif format == "csv":
-        # 保存为 CSV
+        # Save as CSV
         if pd is None:
             raise ImportError(
                 "pandas is required for CSV export. Install it with: pip install pandas"
@@ -263,11 +263,11 @@ def save_benchmark(
             })
         
         df = pd.DataFrame(rows)
-        df.to_csv(output_path, index=False, encoding="utf-8-sig")  # 使用 utf-8-sig 以便 Excel 正确打开
+        df.to_csv(output_path, index=False, encoding="utf-8-sig")  # Use utf-8-sig for Excel to open correctly
         return output_path
     
     elif format == "excel":
-        # 保存为 Excel
+        # Save as Excel
         if pd is None:
             raise ImportError(
                 "pandas is required for Excel export. Install it with: pip install pandas openpyxl"
@@ -289,7 +289,7 @@ def save_benchmark(
         with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
             df.to_excel(writer, sheet_name="Benchmark", index=False)
             
-            # 设置列宽
+            # Set column widths
             worksheet = writer.sheets["Benchmark"]
             worksheet.column_dimensions["A"].width = 15  # ID
             worksheet.column_dimensions["B"].width = 50  # Question

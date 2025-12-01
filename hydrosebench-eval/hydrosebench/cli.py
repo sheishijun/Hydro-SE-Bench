@@ -6,15 +6,15 @@ from pathlib import Path
 from typing import Any
 
 from .benchmark import Benchmark
-from .datasets import BUILTIN_BENCHMARKS, download_hydrobench_data, load_builtin_benchmark
+from .datasets import BUILTIN_BENCHMARKS, download_hydrosebench_data, load_builtin_benchmark
 from .excel_loader import load_benchmark_from_file, load_predictions_from_excel
 from .batch_evaluate import evaluate_all_models
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="hydrobench",
-        description="Score model predictions on the HydroBench benchmark.",
+        prog="hydrosebench",
+        description="Score model predictions on the HydroSEBench benchmark.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -22,7 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
     eval_parser.add_argument(
         "--benchmark",
         choices=sorted(BUILTIN_BENCHMARKS),
-        help="Use a bundled benchmark (hydrobench).",
+        help="Use a bundled benchmark (hydrosebench).",
     )
     eval_parser.add_argument(
         "--benchmark-path",
@@ -69,7 +69,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print per-question correctness to stdout.",
     )
 
-    # 批量评估命令
+    # Batch evaluation command
     batch_parser = subparsers.add_parser(
         "batch-evaluate",
         help="Batch evaluate multiple models from an Excel file",
@@ -83,8 +83,8 @@ def build_parser() -> argparse.ArgumentParser:
     batch_parser.add_argument(
         "--benchmark",
         choices=sorted(BUILTIN_BENCHMARKS),
-        default="hydrobench",
-        help="Use a bundled benchmark (default: hydrobench).",
+        default="hydrosebench",
+        help="Use a bundled benchmark (default: hydrosebench).",
     )
     batch_parser.add_argument(
         "--benchmark-path",
@@ -107,16 +107,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Suppress verbose output.",
     )
 
-    # 下载命令
+    # Download command
     download_parser = subparsers.add_parser(
         "download",
-        help="Download hydrobench data files (JSON or Excel)",
+        help="Download hydrosebench data files (JSON or CSV)",
     )
     download_parser.add_argument(
         "--format",
-        choices=["json", "csv", "xlsx", "all"],
+        choices=["json", "csv", "all"],
         default="all",
-        help="File format to download: json, csv, xlsx, or all (default: all)",
+        help="File format to download: json, csv, or all (default: all)",
     )
     download_parser.add_argument(
         "--output",
@@ -147,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
             output_path = Path(args.output)
             output_format = args.output_format
             
-            # 自动检测格式
+            # Auto-detect format
             if output_format == "auto":
                 ext = output_path.suffix.lower()
                 if ext == ".csv":
@@ -159,24 +159,24 @@ def main(argv: list[str] | None = None) -> int:
                 else:
                     output_format = "json"
             
-            # 导出报告
+            # Export report
             if output_format == "csv":
                 report.to_csv(output_path, benchmark=benchmark)
-                print(f"CSV 报告已保存到: {output_path}")
+                print(f"CSV report saved to: {output_path}")
             elif output_format == "xlsx":
                 report.to_excel(output_path, benchmark=benchmark)
-                print(f"Excel 报告已保存到: {output_path}")
+                print(f"Excel report saved to: {output_path}")
             elif output_format == "md":
                 report.to_markdown(output_path, benchmark=benchmark)
-                print(f"Markdown 报告已保存到: {output_path}")
+                print(f"Markdown report saved to: {output_path}")
             else:
                 output_path.write_text(report.to_json(), encoding="utf-8")
-                print(f"JSON 报告已保存到: {output_path}")
+                print(f"JSON report saved to: {output_path}")
 
         return 0
 
     elif args.command == "batch-evaluate":
-        # 加载 benchmark
+        # Load benchmark
         if args.benchmark_path:
             path = args.benchmark_path
             if path.suffix.lower() in (".xlsx", ".xls", ".excel"):
@@ -186,12 +186,12 @@ def main(argv: list[str] | None = None) -> int:
         else:
             benchmark = load_builtin_benchmark(args.benchmark)
 
-        # 确定输出目录
+        # Determine output directory
         output_dir = args.output_dir
         if output_dir is None:
             output_dir = args.excel.parent
 
-        # 执行批量评估
+        # Execute batch evaluation
         evaluate_all_models(
             args.excel,
             benchmark=benchmark,
@@ -203,37 +203,33 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     elif args.command == "download":
-        # 确定输出路径
+        # Determine output path
         if args.output is None:
             output_path = Path.cwd()
         else:
             output_path = Path(args.output)
 
-        # 如果输出路径是文件，则只支持单个格式
+        # If output path is a file, only support single format
         if output_path.is_file() or (args.format != "all" and output_path.suffix):
             if args.format == "all":
                 raise SystemExit(
                     "Cannot download all formats to a single file. "
-                    "Please specify --format json, --format csv, or --format xlsx, or use a directory path."
+                    "Please specify --format json or --format csv, or use a directory path."
                 )
-            # 下载到指定文件路径
-            downloaded_path = download_hydrobench_data(args.format, output_path)
-            print(f"文件已下载到: {downloaded_path}")
+            # Download to specified file path
+            downloaded_path = download_hydrosebench_data(args.format, output_path)
+            print(f"File downloaded to: {downloaded_path}")
         else:
-            # 输出路径是目录
+            # Output path is a directory
             output_path.mkdir(parents=True, exist_ok=True)
             
             if args.format in ("json", "all"):
-                json_path = download_hydrobench_data("json", output_path / "hydrobench.json")
-                print(f"JSON 文件已下载到: {json_path}")
+                json_path = download_hydrosebench_data("json", output_path / "hydrosebench.json")
+                print(f"JSON file downloaded to: {json_path}")
             
             if args.format in ("csv", "all"):
-                csv_path = download_hydrobench_data("csv", output_path / "hydrobench.csv")
-                print(f"CSV 文件已下载到: {csv_path}")
-            
-            if args.format in ("xlsx", "all"):
-                xlsx_path = download_hydrobench_data("xlsx", output_path / "hydrobench.xlsx")
-                print(f"Excel 文件已下载到: {xlsx_path}")
+                csv_path = download_hydrosebench_data("csv", output_path / "hydrosebench.csv")
+                print(f"CSV file downloaded to: {csv_path}")
 
         return 0
 
@@ -258,17 +254,17 @@ def _load_benchmark(args: argparse.Namespace) -> Benchmark:
 def _load_predictions(args: argparse.Namespace) -> Any:
     path = args.predictions
     if path.suffix.lower() in (".csv", ".xlsx", ".xls", ".excel"):
-        # 如果指定了 id_col 为空字符串，则使用 None（按行顺序）
+        # If id_col is specified as empty string, use None (order by row)
         id_col = args.predictions_id_col if args.predictions_id_col else None
-        # 如果 id_col 是 "ID" 但 Excel 中没有该列，自动降级为 None（按行顺序）
+        # If id_col is "ID" but Excel doesn't have this column, automatically downgrade to None (order by row)
         if id_col == "ID":
             import pandas as pd
             try:
-                df = pd.read_excel(path, nrows=0)  # 只读取列名
+                df = pd.read_excel(path, nrows=0)  # Only read column names
                 if "ID" not in df.columns:
                     id_col = None
             except Exception:
-                pass  # 如果读取失败，继续使用 "ID"
+                pass  # If read fails, continue using "ID"
         
         return load_predictions_from_excel(
             path,
@@ -280,5 +276,5 @@ def _load_predictions(args: argparse.Namespace) -> Any:
     try:
         return json.loads(text)
     except json.JSONDecodeError as exc:  # pragma: no cover - user input
-        raise SystemExit(f"无法解析预测文件 {path}: {exc}") from exc
+        raise SystemExit(f"Cannot parse prediction file {path}: {exc}") from exc
 

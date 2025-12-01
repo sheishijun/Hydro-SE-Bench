@@ -99,7 +99,7 @@ class Benchmark:
                 )
             )
 
-            # 支持 "id" 和 "ID" 两种字段名
+            # Support both "id" and "ID" field names
             example_id = (
                 str(item.get("id") or item.get("ID"))
                 if (item.get("id") or item.get("ID"))

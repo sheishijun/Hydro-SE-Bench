@@ -83,13 +83,13 @@ class ScoreReport:
 
     def get_category_stats(self, benchmark: Any | None = None) -> dict[str, dict[str, Any]]:
         """
-        按类别统计正确率。
+        Calculate accuracy statistics by category.
         
         Args:
-            benchmark: Benchmark 对象，用于获取题目的类别信息
+            benchmark: Benchmark object, used to get question category information
         
         Returns:
-            字典，键为类别名称，值为包含统计信息的字典
+            Dictionary with category names as keys and statistics dictionaries as values
         """
         category_stats: dict[str, dict[str, int]] = {}
         
@@ -103,7 +103,7 @@ class ScoreReport:
             elif score.metadata:
                 category = score.metadata.get("category")
             
-            category = str(category) if category else "未知"
+            category = str(category) if category else "Unknown"
             
             if category not in category_stats:
                 category_stats[category] = {"total": 0, "correct": 0}
@@ -112,7 +112,7 @@ class ScoreReport:
             if score.is_correct:
                 category_stats[category]["correct"] += 1
         
-        # 计算准确率
+        # Calculate accuracy
         result = {}
         for category, stats in category_stats.items():
             accuracy = stats["correct"] / stats["total"] if stats["total"] > 0 else 0.0
@@ -127,13 +127,13 @@ class ScoreReport:
 
     def get_level_stats(self, benchmark: Any | None = None) -> dict[str, dict[str, Any]]:
         """
-        按难度等级统计正确率。
+        Calculate accuracy statistics by difficulty level.
         
         Args:
-            benchmark: Benchmark 对象，用于获取题目的难度信息
+            benchmark: Benchmark object, used to get question difficulty information
         
         Returns:
-            字典，键为难度等级，值为包含统计信息的字典
+            Dictionary with difficulty levels as keys and statistics dictionaries as values
         """
         level_stats: dict[str, dict[str, int]] = {}
         
@@ -147,7 +147,7 @@ class ScoreReport:
             elif score.metadata:
                 level = score.metadata.get("level")
             
-            level = str(level) if level else "未知"
+            level = str(level) if level else "Unknown"
             
             if level not in level_stats:
                 level_stats[level] = {"total": 0, "correct": 0}
@@ -156,7 +156,7 @@ class ScoreReport:
             if score.is_correct:
                 level_stats[level]["correct"] += 1
         
-        # 计算准确率
+        # Calculate accuracy
         result = {}
         for level, stats in level_stats.items():
             accuracy = stats["correct"] / stats["total"] if stats["total"] > 0 else 0.0
@@ -171,13 +171,13 @@ class ScoreReport:
 
     def get_type_stats(self, benchmark: Any | None = None) -> dict[str, dict[str, Any]]:
         """
-        按题型统计正确率。
+        Calculate accuracy statistics by question type.
         
         Args:
-            benchmark: Benchmark 对象，用于获取题目的题型信息
+            benchmark: Benchmark object, used to get question type information
         
         Returns:
-            字典，键为题型名称，值为包含统计信息的字典
+            Dictionary with question type names as keys and statistics dictionaries as values
         """
         type_stats: dict[str, dict[str, int]] = {}
         
@@ -191,7 +191,7 @@ class ScoreReport:
             elif score.metadata:
                 qtype = score.metadata.get("type")
             
-            qtype = str(qtype) if qtype else "未知"
+            qtype = str(qtype) if qtype else "Unknown"
             
             if qtype not in type_stats:
                 type_stats[qtype] = {"total": 0, "correct": 0}
@@ -200,7 +200,7 @@ class ScoreReport:
             if score.is_correct:
                 type_stats[qtype]["correct"] += 1
         
-        # 计算准确率
+        # Calculate accuracy
         result = {}
         for qtype, stats in type_stats.items():
             accuracy = stats["correct"] / stats["total"] if stats["total"] > 0 else 0.0
@@ -220,14 +220,14 @@ class ScoreReport:
         benchmark: Any | None = None,
     ) -> Path:
         """
-        导出为 CSV 格式，包含题目、正确答案、模型答案等详细信息。
+        Export to CSV format, including detailed information such as questions, correct answers, and model answers.
         
         Args:
-            output_path: 输出文件路径
-            benchmark: 可选的 Benchmark 对象，用于获取题目内容等详细信息
+            output_path: Output file path
+            benchmark: Optional Benchmark object, used to get detailed information such as question content
         
         Returns:
-            输出文件路径
+            Output file path
         """
         if pd is None:
             raise ImportError(
@@ -236,17 +236,17 @@ class ScoreReport:
         
         output_path = Path(output_path)
         
-        # 构建数据行（与 to_excel 相同）
+        # Build data rows (same as to_excel)
         rows = []
         for score in self.example_scores:
-            # 获取题目内容（如果有 benchmark）
+            # Get question content (if benchmark is available)
             question_text = ""
             category = None
             level = None
             question_type = None
             
             if benchmark is not None:
-                # 从 benchmark 中查找对应的题目
+                # Find corresponding question from benchmark
                 example = None
                 for ex in benchmark.examples:
                     if ex.id == score.example_id:
@@ -259,25 +259,25 @@ class ScoreReport:
                     level = example.level
                     question_type = example.question_type
             
-            # 格式化答案
-            expected_str = ",".join(sorted(score.expected)) if score.expected else "(无)"
+            # Format answers
+            expected_str = ",".join(sorted(score.expected)) if score.expected else "(None)"
             
-            # 显示原始输入值，如果缺失则显示"(缺失)"
+            # Show raw input value, if missing show "(Missing)"
             if score.missing_prediction:
-                predicted_str = "(缺失)"
+                predicted_str = "(Missing)"
             elif score.predicted:
-                # 如果能解析出有效答案，显示解析后的答案
+                # If valid answer can be parsed, show parsed answer
                 predicted_str = ",".join(sorted(score.predicted))
             else:
-                # 如果无法解析但原始值存在，直接显示原始值
+                # If cannot parse but raw value exists, show raw value directly
                 if score.raw_prediction is not None:
-                    # 显示原始输入值
+                    # Show raw input value
                     if isinstance(score.raw_prediction, str):
                         predicted_str = score.raw_prediction
                     else:
                         predicted_str = str(score.raw_prediction)
                 else:
-                    predicted_str = "(缺失)"
+                    predicted_str = "(Missing)"
             
             rows.append({
                 "ID": score.example_id,
@@ -291,9 +291,9 @@ class ScoreReport:
                 "Status": "Correct" if score.is_correct else ("Missing" if score.missing_prediction else "Incorrect"),
             })
         
-        # 创建 DataFrame 并保存为 CSV
+        # Create DataFrame and save as CSV
         df = pd.DataFrame(rows)
-        df.to_csv(output_path, index=False, encoding="utf-8-sig")  # 使用 utf-8-sig 以便 Excel 正确打开
+        df.to_csv(output_path, index=False, encoding="utf-8-sig")  # Use utf-8-sig for Excel to open correctly
         
         return output_path
 
@@ -304,14 +304,14 @@ class ScoreReport:
         benchmark: Any | None = None,
     ) -> Path:
         """
-        导出为 Excel 格式，包含题目、正确答案、模型答案等详细信息。
+        Export to Excel format, including detailed information such as questions, correct answers, and model answers.
         
         Args:
-            output_path: 输出文件路径
-            benchmark: 可选的 Benchmark 对象，用于获取题目内容等详细信息
+            output_path: Output file path
+            benchmark: Optional Benchmark object, used to get detailed information such as question content
         
         Returns:
-            输出文件路径
+            Output file path
         """
         if pd is None:
             raise ImportError(
@@ -320,17 +320,17 @@ class ScoreReport:
         
         output_path = Path(output_path)
         
-        # 构建数据行
+        # Build data rows
         rows = []
         for score in self.example_scores:
-            # 获取题目内容（如果有 benchmark）
+            # Get question content (if benchmark is available)
             question_text = ""
             category = None
             level = None
             question_type = None
             
             if benchmark is not None:
-                # 从 benchmark 中查找对应的题目
+                # Find corresponding question from benchmark
                 example = None
                 for ex in benchmark.examples:
                     if ex.id == score.example_id:
@@ -343,25 +343,25 @@ class ScoreReport:
                     level = example.level
                     question_type = example.question_type
             
-            # 格式化答案
-            expected_str = ",".join(sorted(score.expected)) if score.expected else "(无)"
+            # Format answers
+            expected_str = ",".join(sorted(score.expected)) if score.expected else "(None)"
             
-            # 显示原始输入值，如果缺失则显示"(缺失)"
+            # Show raw input value, if missing show "(Missing)"
             if score.missing_prediction:
-                predicted_str = "(缺失)"
+                predicted_str = "(Missing)"
             elif score.predicted:
-                # 如果能解析出有效答案，显示解析后的答案
+                # If valid answer can be parsed, show parsed answer
                 predicted_str = ",".join(sorted(score.predicted))
             else:
-                # 如果无法解析但原始值存在，直接显示原始值
+                # If cannot parse but raw value exists, show raw value directly
                 if score.raw_prediction is not None:
-                    # 显示原始输入值
+                    # Show raw input value
                     if isinstance(score.raw_prediction, str):
                         predicted_str = score.raw_prediction
                     else:
                         predicted_str = str(score.raw_prediction)
                 else:
-                    predicted_str = "(缺失)"
+                    predicted_str = "(Missing)"
             
             rows.append({
                 "ID": score.example_id,
@@ -375,14 +375,14 @@ class ScoreReport:
                 "Status": "Correct" if score.is_correct else ("Missing" if score.missing_prediction else "Incorrect"),
             })
         
-        # 创建 DataFrame
+        # Create DataFrame
         df = pd.DataFrame(rows)
         
-        # 写入 Excel
+        # Write to Excel
         with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
             df.to_excel(writer, sheet_name="Evaluation Results", index=False)
             
-            # 设置列宽
+            # Set column widths
             worksheet = writer.sheets["Evaluation Results"]
             worksheet.column_dimensions["A"].width = 15  # ID
             worksheet.column_dimensions["B"].width = 50  # Question
@@ -394,16 +394,16 @@ class ScoreReport:
             worksheet.column_dimensions["H"].width = 10  # Is Correct
             worksheet.column_dimensions["I"].width = 10  # Status
             
-            # 添加汇总信息
+            # Add summary information
             summary_row = len(df) + 3
             worksheet.cell(summary_row, 1, "Summary")
-            worksheet.cell(summary_row + 1, 1, "Benchmark: hydrobench")
+            worksheet.cell(summary_row + 1, 1, "Benchmark: hydrosebench")
             worksheet.cell(summary_row + 2, 1, f"Total Questions: {self.max_score}")
             worksheet.cell(summary_row + 3, 1, f"Correct: {self.total_score}")
             worksheet.cell(summary_row + 4, 1, f"Incorrect: {self.max_score - self.total_score}")
             worksheet.cell(summary_row + 5, 1, f"Accuracy: {self.accuracy:.2%}")
             
-            # 添加按类别统计的工作表
+            # Add worksheet with statistics by category
             category_stats = self.get_category_stats(benchmark)
             if category_stats:
                 category_rows = []
@@ -417,11 +417,11 @@ class ScoreReport:
                     })
                 
                 category_df = pd.DataFrame(category_rows)
-                # Excel 工作表名称限制为31个字符
+                # Excel worksheet name limited to 31 characters
                 sheet_name = "By Category"[:31]
                 category_df.to_excel(writer, sheet_name=sheet_name, index=False)
                 
-                # 设置列宽
+                # Set column widths
                 cat_worksheet = writer.sheets[sheet_name]
                 cat_worksheet.column_dimensions["A"].width = 30
                 cat_worksheet.column_dimensions["B"].width = 12
@@ -429,7 +429,7 @@ class ScoreReport:
                 cat_worksheet.column_dimensions["D"].width = 12
                 cat_worksheet.column_dimensions["E"].width = 12
                 
-                # 添加汇总信息
+                # Add summary information
                 summary_row = len(category_df) + 3
                 cat_worksheet.cell(summary_row, 1, "Summary")
                 cat_worksheet.cell(summary_row + 1, 1, f"Total Categories: {len(category_stats)}")
@@ -441,7 +441,7 @@ class ScoreReport:
                     overall_acc = total_correct / total_questions
                     cat_worksheet.cell(summary_row + 4, 1, f"Overall Accuracy: {overall_acc:.2%}")
             
-            # 添加按难度统计的工作表
+            # Add worksheet with statistics by difficulty level
             level_stats = self.get_level_stats(benchmark)
             if level_stats:
                 level_rows = []
@@ -455,11 +455,11 @@ class ScoreReport:
                     })
                 
                 level_df = pd.DataFrame(level_rows)
-                # Excel 工作表名称限制为31个字符
+                # Excel worksheet name limited to 31 characters
                 sheet_name = "By Level"[:31]
                 level_df.to_excel(writer, sheet_name=sheet_name, index=False)
                 
-                # 设置列宽
+                # Set column widths
                 level_worksheet = writer.sheets[sheet_name]
                 level_worksheet.column_dimensions["A"].width = 30
                 level_worksheet.column_dimensions["B"].width = 12
@@ -467,7 +467,7 @@ class ScoreReport:
                 level_worksheet.column_dimensions["D"].width = 12
                 level_worksheet.column_dimensions["E"].width = 12
                 
-                # 添加汇总信息
+                # Add summary information
                 summary_row = len(level_df) + 3
                 level_worksheet.cell(summary_row, 1, "Summary")
                 level_worksheet.cell(summary_row + 1, 1, f"Total Levels: {len(level_stats)}")
@@ -479,7 +479,7 @@ class ScoreReport:
                     overall_acc = total_correct / total_questions
                     level_worksheet.cell(summary_row + 4, 1, f"Overall Accuracy: {overall_acc:.2%}")
             
-            # 添加按题型统计的工作表
+            # Add worksheet with statistics by question type
             type_stats = self.get_type_stats(benchmark)
             if type_stats:
                 type_rows = []
@@ -496,7 +496,7 @@ class ScoreReport:
                 sheet_name = "By Type"[:31]
                 type_df.to_excel(writer, sheet_name=sheet_name, index=False)
                 
-                # 设置列宽
+                # Set column widths
                 type_worksheet = writer.sheets[sheet_name]
                 type_worksheet.column_dimensions["A"].width = 30
                 type_worksheet.column_dimensions["B"].width = 12
@@ -504,7 +504,7 @@ class ScoreReport:
                 type_worksheet.column_dimensions["D"].width = 12
                 type_worksheet.column_dimensions["E"].width = 12
                 
-                # 添加汇总信息
+                # Add summary information
                 summary_row = len(type_df) + 3
                 type_worksheet.cell(summary_row, 1, "Summary")
                 type_worksheet.cell(summary_row + 1, 1, f"Total Types: {len(type_stats)}")
@@ -526,33 +526,33 @@ class ScoreReport:
         max_rows: int | None = None,
     ) -> str:
         """
-        导出为 Markdown 表格格式，便于查看和分享。
+        Export as Markdown table format for easy viewing and sharing.
         
         Args:
-            output_path: 可选的输出文件路径，如果不提供则只返回字符串
-            benchmark: 可选的 Benchmark 对象，用于获取题目内容等详细信息
-            max_rows: 最大显示行数，None 表示显示全部
+            output_path: Optional output file path, if not provided only returns string
+            benchmark: Optional Benchmark object, used to get detailed information such as question content
+            max_rows: Maximum number of rows to display, None means display all
         
         Returns:
-            Markdown 格式的字符串
+            Markdown format string
         """
         lines = []
         
-        # 标题
-        lines.append(f"# {self.benchmark_name or '评估报告'}")
+        # Title
+        lines.append(f"# {self.benchmark_name or 'Evaluation Report'}")
         lines.append("")
-        lines.append(f"**总分**: {self.total_score}/{self.max_score} ({self.accuracy:.2%})")
+        lines.append(f"**Total Score**: {self.total_score}/{self.max_score} ({self.accuracy:.2%})")
         lines.append("")
         
-        # 表格头部
-        headers = ["ID", "题目", "类别", "难度", "正确答案", "模型答案", "结果"]
+        # Table header
+        headers = ["ID", "Question", "Category", "Level", "Correct Answer", "Model Answer", "Result"]
         lines.append("| " + " | ".join(headers) + " |")
         lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
         
-        # 表格内容
+        # Table content
         scores_to_show = self.example_scores[:max_rows] if max_rows else self.example_scores
         for score in scores_to_show:
-            # 获取题目内容
+            # Get question content
             question_text = ""
             category = ""
             level = ""
@@ -565,17 +565,17 @@ class ScoreReport:
                         break
                 
                 if example:
-                    # 截断过长的题目
+                    # Truncate overly long questions
                     question_text = example.input_text[:50] + "..." if len(example.input_text) > 50 else example.input_text
                     category = str(example.category) if example.category else ""
                     level = str(example.level) if example.level else ""
             
-            # 格式化答案
-            expected_str = ",".join(sorted(score.expected)) if score.expected else "(无)"
-            predicted_str = ",".join(sorted(score.predicted)) if score.predicted else "(缺失)"
+            # Format answers
+            expected_str = ",".join(sorted(score.expected)) if score.expected else "(None)"
+            predicted_str = ",".join(sorted(score.predicted)) if score.predicted else "(Missing)"
             
-            # 结果标记
-            result = "✓ 正确" if score.is_correct else ("✗ 缺失" if score.missing_prediction else "✗ 错误")
+            # Result marker
+            result = "✓ Correct" if score.is_correct else ("✗ Missing" if score.missing_prediction else "✗ Incorrect")
             
             row = [
                 score.example_id,
@@ -590,11 +590,11 @@ class ScoreReport:
         
         if max_rows and len(self.example_scores) > max_rows:
             lines.append("")
-            lines.append(f"*（仅显示前 {max_rows} 条，共 {len(self.example_scores)} 条）*")
+            lines.append(f"*(Showing first {max_rows} of {len(self.example_scores)} entries)*")
         
         markdown_text = "\n".join(lines)
         
-        # 如果提供了输出路径，写入文件
+        # If output path is provided, write to file
         if output_path:
             Path(output_path).write_text(markdown_text, encoding="utf-8")
         
