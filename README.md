@@ -6,7 +6,7 @@ HydroSEBench is a professional evaluation dataset specifically designed for the 
 
 The HydroSEBench dataset contains **4,000** questions covering nine core professional directions in water conservancy and hydropower. All questions are in Chinese, making it suitable for evaluating Chinese language models' professional capabilities in the water engineering domain.
 
-> **Note**: Currently, we have only released half of the questions (questions with odd-numbered IDs). In the future, the complete evaluation dataset will be integrated into the Hanmo Large Model website for public testing.
+> **Note**: Currently, we have only released half of the questions (questions with odd-numbered IDs). In the future, the complete evaluation dataset will be integrated into the Hammer Large Model website (瀚沫水利大模型网站) for public testing.
 
 ![Question Distribution](Question_Distribution.png)
 
